@@ -33,18 +33,26 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'string', 'in:user,worker'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role ?? 'user',
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect based on user role
+        return match($user->role) {
+            'admin' => redirect(route('dashboard.admin', absolute: false)),
+            'worker' => redirect(route('dashboard.worker', absolute: false)),
+            'user' => redirect(route('dashboard.user', absolute: false)),
+            default => redirect(route('dashboard.user', absolute: false)),
+        };
     }
 }
