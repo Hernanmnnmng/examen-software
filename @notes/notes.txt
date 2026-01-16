@@ -1,0 +1,10 @@
+rollen : directie, magazijnmedewerker, vrijwilliger
+
+klanten moeten worden geaccepteerd!
+tabelen: voedselpakket(voor 1 klant, pakketnummer, uitgiftedatum),
+
+geen diepvries en geen alcoholische producten. nieuwe categories toevoegen en omschrijving
+
+
+managementinformatie- maandoverzicht per productcategorie, maandoverzicht per postcode
+

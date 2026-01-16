@@ -1,0 +1,106 @@
+project examen{
+    note: 'examen software developer'
+}
+
+Table klant {
+    id int [pk, increment]
+    userid int [fk]
+
+}
+
+Table adres{
+    id int [pk, increment]
+    straat varchar
+    huisnummer varchar
+    toevoeging varchar
+    postcode char
+    plaats varchar
+}
+
+Table gezin {
+    // tussen tabbel voor wensen
+    id int [pk, increment]
+    klantid int [fk]
+    volwassenen int
+    kinderen int
+    babys int
+}
+
+Table gezin-wensen{
+    id int [pk, increment]
+    gezinid int
+    wensenid int
+}
+
+Table wensen {
+    //geen allergie allergie appart
+    id int [pk, increment]
+    naam varchar
+    omschrijving varchar
+}
+Table gezin-allergie {
+    id int [pk, increment]
+    gezinid int
+    wensenid int
+}
+
+Table allergie {
+    id int [pk, increment]
+    naam varchar
+    omschrijving varchar
+}
+
+
+Table product {
+    id int [pk, increment]
+    naam varchar(unique)
+    omschrijving varchar
+    aantal varchar
+    streepjescode char(13 cijfers)
+    categorieid int [fk]
+}
+
+Table categorie {
+    id int [pk, increment]
+    naam varchar
+    omschrijving varchar
+}
+
+Table Voedselpakket {
+    id int [pk, increment]
+    klantid int [fk]
+    pakketnummer int
+    uitgiftedatum datetime
+}
+
+Table leverancier {
+    id int [pk, increment]
+    naam varchar
+    telefoonnummer char
+    conactpersoon
+}
+
+Table contactpersoon {
+    naam varchar
+    telefoonnummer char
+    email varchar
+}
+
+Table leverancier-adres{
+    id int [pk, increment]
+    leverancierid int [fk]
+    adresid int [fk]
+
+}
+
+Table levering {
+    id int [pk, increment]
+    eerstvolgendelevering date
+    leveringdatum date
+}
+Table levering-producten {
+    id int [pk, increment]
+    leveringid int [fk]
+    productid int [fk]
+    aanatal int
+}
