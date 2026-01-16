@@ -1,269 +1,260 @@
 // --- LARAVEL USERS & ROLES ---
 Table Roles {
   id int [pk, increment]
-  name varchar [unique] // Bijv: 'admin', 'worker', 'user'
-  guard_name varchar [default: 'web']
+  name varchar(50) [unique]
+  guard_name varchar(50) [default: 'web']
 
-  created_at timestamp [null]
-  updated_at timestamp [null]
+  created_at datetime(6) [null]
+  updated_at datetime(6) [null]
 }
 
 Table users {
   id int [pk, increment]
-  role_id int // Verwijst naar Roles.id
-  name varchar
-  email varchar [unique]
-  email_verified_at timestamp [null]
-  password varchar
-  remember_token varchar [null]
-  created_at timestamp [null]
-  updated_at timestamp [null]
+  role_id int
+  name varchar(255)
+  email varchar(255) [unique]
+  email_verified_at datetime(6) [null]
+  password varchar(255)
+  remember_token varchar(100) [null]
+  created_at datetime(6) [null]
+  updated_at datetime(6) [null]
 }
 
 // --- STAMGEGEVENS ---
 
 Table Adressen {
   id int [pk, increment]
-  Straat varchar
-  Huisnummer varchar
-  Postcode varchar
-  Plaats varchar
+  Straat varchar(255)
+  Huisnummer varchar(20) // Kan 12, 12a, 12-rood zijn, dus varchar
+  Postcode char(6)       // AANGEPAST: Vast formaat (bijv. 1234AB)
+  Plaats varchar(100)
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table ProductCategorieen {
   id int [pk, increment]
-  Naam varchar [unique]
+  Naam varchar(100) [unique] // 100 is ruim voldoende voor een categorienaam
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table Wensen {
   id int [pk, increment]
-  Omschrijving varchar [unique]
+  Omschrijving varchar(100) [unique] // Korte omschrijvingen (Vegan, Halal)
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table Allergenen {
   id int [pk, increment]
-  Naam varchar [unique]
+  Naam varchar(100) [unique] // Bijv: 'Gluten', 'Pinda's'
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 // --- RELATIES & PARTIJEN ---
 
 Table Leveranciers {
   id int [pk, increment]
-  Bedrijfsnaam varchar
-  Adresid int
-  contactpersoonid int
+  Bedrijfsnaam varchar(255)
+  adres_id int
+  contactpersoon_id int
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table contactpersoon {
   id int [pk, increment]
-  ContactNaam varchar
-  Email varchar
-  Telefoon varchar
+  ContactNaam varchar(255)
+  Email varchar(255)
+  Telefoon varchar(20) // Flexibel voor int. nummers
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table Klanten {
   id int [pk, increment]
-  user_id int [unique] // Koppeling naar users
-  Adresid int
-  Telefoon varchar
-  gezinid int
+  user_id int [unique]
+  adres_id int
+  gezin_id int
+  Telefoon varchar(20)
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table Gezinnen {
   id int [pk, increment]
-  GezinsNaam varchar
-  Volwassenen int [default: 0]
-  Kinderen int [default: 0]
-  Babys int [default: 0]
+  GezinsNaam varchar(255)
+  Volwassenen tinyint [default: 0] // AANGEPAST: Max 255 is genoeg
+  Kinderen tinyint [default: 0]    // AANGEPAST
+  Babys tinyint [default: 0]       // AANGEPAST
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 // --- PRODUCTEN & VOORRAAD ---
 
 Table Producten {
   id int [pk, increment]
-  ProductNaam varchar [unique]
-  EAN varchar [unique]
-  Categorieid int
+  ProductNaam varchar(255) [unique]
+  EAN char(13) [unique] // AANGEPAST: EAN-13 is altijd 13 cijfers
+  categorie_id int
   AantalVoorraad int [default: 0]
-  MagazijnLocatie varchar
+  MagazijnLocatie varchar(50) // 'Stelling A' hoeft niet lang te zijn
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table ProductKenmerken {
   id int [pk, increment]
-  Productid int
-  Wensid int
+  product_id int
+  wens_id int
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table ProductAllergenen {
   id int [pk, increment]
-  Productid int
-  Allergieid int
+  product_id int
+  allergie_id int
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 // --- PROCES: LEVERINGEN & PAKKETTEN ---
 
 Table Leveringen {
   id int [pk, increment]
-  Leverancierid int
-  LeverdatumTijd datetime
-  eerstvolgendelevering datetime
+  leverancier_id int
+  LeverdatumTijd datetime(6)
+  eerstvolgendelevering datetime(6)
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table LeveringProducten {
   id int [pk, increment]
-  Leveringid int
-  Productid int
-  Aantal int
+  levering_id int
+  product_id int
+  Aantal int // Grote leveringen kunnen > 32000 zijn, dus int
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table Voedselpakketten {
   id int [pk, increment]
-  Klantid int
-  DatumSamenstelling datetime [default: `CURRENT_TIMESTAMP`]
-  DatumUitgifte datetime
+  klant_id int
+  DatumSamenstelling datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumUitgifte datetime(6)
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table VoedselpakketProducten {
   id int [pk, increment]
-  Voedselpakketid int
-  Productid int
-  Aantal int [default: 1]
+  voedselpakket_id int
+  product_id int
+  Aantal tinyint [default: 1] // AANGEPAST: Pakket bevat zelden > 32000 items
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 // --- KLANT SPECIFIEK ---
 
 Table KlantWensen {
   id int [pk, increment]
-  Klantid int
-  Wensid int
+  klant_id int
+  wens_id int
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 Table KlantAllergenen {
   id int [pk, increment]
-  Klantid int
-  Allergieid int
+  klant_id int
+  allergie_id int
 
   IsActief bit [default: 1]
-  Opmerking text
-  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+  Opmerking varchar(255)
+  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
 }
 
 // --- REFERENCES ---
 
-// Role Relatie
 Ref: users.role_id > Roles.id
-
-// User koppeling
 Ref: Klanten.user_id - users.id
 
-// Leverancier Relaties (Compleet gemaakt)
-Ref: Leveranciers.Adresid > Adressen.id
-Ref: Leveranciers.contactpersoonid > contactpersoon.id // NIEUW
+Ref: Leveranciers.adres_id > Adressen.id
+Ref: Leveranciers.contactpersoon_id > contactpersoon.id
 
-// Klant Relaties (Compleet gemaakt)
-Ref: Klanten.Adresid > Adressen.id
-Ref: Klanten.gezinid > Gezinnen.id // NIEUW
+Ref: Klanten.adres_id > Adressen.id
+Ref: Klanten.gezin_id > Gezinnen.id
 
-// Product Relaties
-Ref: Producten.Categorieid > ProductCategorieen.id
-Ref: ProductAllergenen.Productid > Producten.id
-Ref: ProductAllergenen.Allergieid > Allergenen.id
-Ref: ProductKenmerken.Productid > Producten.id
-Ref: ProductKenmerken.Wensid > Wensen.id
+Ref: Producten.categorie_id > ProductCategorieen.id
+Ref: ProductAllergenen.product_id > Producten.id
+Ref: ProductAllergenen.allergie_id > Allergenen.id
+Ref: ProductKenmerken.product_id > Producten.id
+Ref: ProductKenmerken.wens_id > Wensen.id
 
-// Klant Wensen/Allergenen Relaties
-Ref: KlantWensen.Klantid > Klanten.id
-Ref: KlantWensen.Wensid > Wensen.id
-Ref: KlantAllergenen.Klantid > Klanten.id
-Ref: KlantAllergenen.Allergieid > Allergenen.id
+Ref: KlantWensen.klant_id > Klanten.id
+Ref: KlantWensen.wens_id > Wensen.id
+Ref: KlantAllergenen.klant_id > Klanten.id
+Ref: KlantAllergenen.allergie_id > Allergenen.id
 
-// Pakket Relaties
-Ref: Voedselpakketten.Klantid > Klanten.id
-Ref: VoedselpakketProducten.Voedselpakketid > Voedselpakketten.id
-Ref: VoedselpakketProducten.Productid > Producten.id
+Ref: Voedselpakketten.klant_id > Klanten.id
+Ref: VoedselpakketProducten.voedselpakket_id > Voedselpakketten.id
+Ref: VoedselpakketProducten.product_id > Producten.id
 
-// Levering Relaties
-Ref: Leveringen.Leverancierid > Leveranciers.id
-Ref: LeveringProducten.Leveringid > Leveringen.id
-Ref: LeveringProducten.Productid > Producten.id
+Ref: Leveringen.leverancier_id > Leveranciers.id
+Ref: LeveringProducten.levering_id > Leveringen.id
+Ref: LeveringProducten.product_id > Producten.id
