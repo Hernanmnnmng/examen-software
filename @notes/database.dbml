@@ -1,11 +1,13 @@
-// --- LARAVEL USERS & ROLES ---
-Table Roles {
+// --------------------------------------------------------
+// 1. AUTHENTICATIE (Laravel Standaard)
+// --------------------------------------------------------
+
+Table roles {
   id int [pk, increment]
   name varchar(50) [unique]
   guard_name varchar(50) [default: 'web']
-
-  created_at datetime(6) [null]
-  updated_at datetime(6) [null]
+  created_at timestamp
+  updated_at timestamp
 }
 
 Table users {
@@ -13,248 +15,244 @@ Table users {
   role_id int
   name varchar(255)
   email varchar(255) [unique]
-  email_verified_at datetime(6) [null]
+  email_verified_at timestamp
   password varchar(255)
-  remember_token varchar(100) [null]
-  created_at datetime(6) [null]
-  updated_at datetime(6) [null]
+  remember_token varchar(100)
+  created_at timestamp
+  updated_at timestamp
 }
 
-// --- STAMGEGEVENS ---
+Ref: users.role_id > roles.id
 
-Table Adressen {
+// --------------------------------------------------------
+// 2. STAMGEGEVENS (Adressen & Categorieën)
+// --------------------------------------------------------
+
+Table adressen {
   id int [pk, increment]
-  Straat varchar(255)
-  Huisnummer varchar(20) // Kan 12, 12a, 12-rood zijn, dus varchar
-  Postcode char(6)       // AANGEPAST: Vast formaat (bijv. 1234AB)
-  Plaats varchar(100)
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  straat varchar(255)
+  huisnummer varchar(20)
+  postcode char(6)
+  plaats varchar(100)
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table ProductCategorieen {
+Table product_categorieen {
   id int [pk, increment]
-  Naam varchar(100) [unique] // 100 is ruim voldoende voor een categorienaam
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  naam varchar(100) [unique]
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table Wensen {
+Table wensen {
   id int [pk, increment]
-  Omschrijving varchar(100) [unique] // Korte omschrijvingen (Vegan, Halal)
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  omschrijving varchar(100) [unique]
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table Allergenen {
+Table allergenen {
   id int [pk, increment]
-  Naam varchar(100) [unique] // Bijv: 'Gluten', 'Pinda's'
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  naam varchar(100) [unique]
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-// --- RELATIES & PARTIJEN ---
+// --------------------------------------------------------
+// 3. PARTIJEN (Leveranciers & Klanten)
+// --------------------------------------------------------
 
-Table Leveranciers {
+Table contactpersonen {
   id int [pk, increment]
-  Bedrijfsnaam varchar(255)
+  contact_naam varchar(255)
+  email varchar(255)
+  telefoon varchar(20)
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
+}
+
+Table leveranciers {
+  id int [pk, increment]
+  bedrijfsnaam varchar(255)
   adres_id int
   contactpersoon_id int
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table contactpersoon {
-  id int [pk, increment]
-  ContactNaam varchar(255)
-  Email varchar(255)
-  Telefoon varchar(20) // Flexibel voor int. nummers
+Ref: leveranciers.adres_id > adressen.id
+Ref: leveranciers.contactpersoon_id > contactpersonen.id
 
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+Table gezinnen {
+  id int [pk, increment]
+  gezins_naam varchar(255)
+  volwassenen tinyint
+  kinderen tinyint
+  babys tinyint
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table Klanten {
+Table klanten {
   id int [pk, increment]
-  user_id int [unique]
+  naam varchar(255)
+  email varchar(255) [unique]
+  telefoon varchar(20)
   adres_id int
   gezin_id int
-  Telefoon varchar(20)
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table Gezinnen {
+Ref: klanten.adres_id > adressen.id
+Ref: klanten.gezin_id > gezinnen.id
+
+// --------------------------------------------------------
+// 4. PRODUCTEN & EIGENSCHAPPEN
+// --------------------------------------------------------
+
+Table producten {
   id int [pk, increment]
-  GezinsNaam varchar(255)
-  Volwassenen tinyint [default: 0] // AANGEPAST: Max 255 is genoeg
-  Kinderen tinyint [default: 0]    // AANGEPAST
-  Babys tinyint [default: 0]       // AANGEPAST
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
-}
-
-// --- PRODUCTEN & VOORRAAD ---
-
-Table Producten {
-  id int [pk, increment]
-  ProductNaam varchar(255) [unique]
-  EAN char(13) [unique] // AANGEPAST: EAN-13 is altijd 13 cijfers
+  product_naam varchar(255) [unique]
+  ean char(13) [unique]
   categorie_id int
-  AantalVoorraad int [default: 0]
-  MagazijnLocatie varchar(50) // 'Stelling A' hoeft niet lang te zijn
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  aantal_voorraad int
+  magazijn_locatie varchar(50)
+  is_actief tinyint [default: 1]
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table ProductKenmerken {
+Ref: producten.categorie_id > product_categorieen.id
+
+Table product_kenmerken {
   id int [pk, increment]
   product_id int
   wens_id int
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table ProductAllergenen {
+Ref: product_kenmerken.product_id > producten.id
+Ref: product_kenmerken.wens_id > wensen.id
+
+Table product_allergenen {
   id int [pk, increment]
   product_id int
   allergie_id int
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-// --- PROCES: LEVERINGEN & PAKKETTEN ---
+Ref: product_allergenen.product_id > producten.id
+Ref: product_allergenen.allergie_id > allergenen.id
 
-Table Leveringen {
+// --------------------------------------------------------
+// 5. PROCES (Leveringen & Pakketten)
+// --------------------------------------------------------
+
+Table leveringen {
   id int [pk, increment]
   leverancier_id int
-  LeverdatumTijd datetime(6)
-  eerstvolgendelevering datetime(6)
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  leverdatum_tijd datetime(6)
+  eerstvolgende_levering datetime(6)
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table LeveringProducten {
+Ref: leveringen.leverancier_id > leveranciers.id
+
+Table levering_producten {
   id int [pk, increment]
   levering_id int
   product_id int
-  Aantal int // Grote leveringen kunnen > 32000 zijn, dus int
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  aantal int
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table Voedselpakketten {
+Ref: levering_producten.levering_id > leveringen.id
+Ref: levering_producten.product_id > producten.id
+
+Table voedselpakketten {
   id int [pk, increment]
   klant_id int
-  DatumSamenstelling datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumUitgifte datetime(6)
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  datum_samenstelling datetime
+  datum_uitgifte datetime
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table VoedselpakketProducten {
+Ref: voedselpakketten.klant_id > klanten.id
+
+Table voedselpakket_producten {
   id int [pk, increment]
   voedselpakket_id int
   product_id int
-  Aantal tinyint [default: 1] // AANGEPAST: Pakket bevat zelden > 32000 items
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  aantal tinyint
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-// --- KLANT SPECIFIEK ---
+Ref: voedselpakket_producten.voedselpakket_id > voedselpakketten.id
+Ref: voedselpakket_producten.product_id > producten.id
 
-Table KlantWensen {
+// --------------------------------------------------------
+// 6. KLANT SPECIFIEK
+// --------------------------------------------------------
+
+Table klant_wensen {
   id int [pk, increment]
   klant_id int
   wens_id int
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-Table KlantAllergenen {
+Ref: klant_wensen.klant_id > klanten.id
+Ref: klant_wensen.wens_id > wensen.id
+
+Table klant_allergenen {
   id int [pk, increment]
   klant_id int
   allergie_id int
-
-  IsActief bit [default: 1]
-  Opmerking varchar(255)
-  DatumAangemaakt datetime(6) [default: `CURRENT_TIMESTAMP`]
-  DatumGewijzigd datetime(6) [default: `CURRENT_TIMESTAMP`]
+  is_actief tinyint
+  opmerking varchar(255)
+  datum_aangemaakt timestamp
+  datum_gewijzigd timestamp
 }
 
-// --- REFERENCES ---
-
-Ref: users.role_id > Roles.id
-Ref: Klanten.user_id - users.id
-
-Ref: Leveranciers.adres_id > Adressen.id
-Ref: Leveranciers.contactpersoon_id > contactpersoon.id
-
-Ref: Klanten.adres_id > Adressen.id
-Ref: Klanten.gezin_id > Gezinnen.id
-
-Ref: Producten.categorie_id > ProductCategorieen.id
-Ref: ProductAllergenen.product_id > Producten.id
-Ref: ProductAllergenen.allergie_id > Allergenen.id
-Ref: ProductKenmerken.product_id > Producten.id
-Ref: ProductKenmerken.wens_id > Wensen.id
-
-Ref: KlantWensen.klant_id > Klanten.id
-Ref: KlantWensen.wens_id > Wensen.id
-Ref: KlantAllergenen.klant_id > Klanten.id
-Ref: KlantAllergenen.allergie_id > Allergenen.id
-
-Ref: Voedselpakketten.klant_id > Klanten.id
-Ref: VoedselpakketProducten.voedselpakket_id > Voedselpakketten.id
-Ref: VoedselpakketProducten.product_id > Producten.id
-
-Ref: Leveringen.leverancier_id > Leveranciers.id
-Ref: LeveringProducten.levering_id > Leveringen.id
-Ref: LeveringProducten.product_id > Producten.id
+Ref: klant_allergenen.klant_id > klanten.id
+Ref: klant_allergenen.allergie_id > allergenen.id

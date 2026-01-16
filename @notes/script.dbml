@@ -1,0 +1,151 @@
+// --------------------------------------------------------
+// 1. AUTHENTICATIE
+// --------------------------------------------------------
+
+Table roles {
+  id int [pk, increment]
+}
+
+Table users {
+  id int [pk, increment]
+  role_id int
+}
+
+Ref: users.role_id > roles.id
+
+// --------------------------------------------------------
+// 2. STAMGEGEVENS
+// --------------------------------------------------------
+
+Table adressen {
+  id int [pk, increment]
+}
+
+Table product_categorieen {
+  id int [pk, increment]
+}
+
+Table wensen {
+  id int [pk, increment]
+}
+
+Table allergenen {
+  id int [pk, increment]
+}
+
+// --------------------------------------------------------
+// 3. PARTIJEN
+// --------------------------------------------------------
+
+Table contactpersonen {
+  id int [pk, increment]
+}
+
+Table leveranciers {
+  id int [pk, increment]
+  adres_id int
+  contactpersoon_id int
+}
+
+Ref: leveranciers.adres_id > adressen.id
+Ref: leveranciers.contactpersoon_id > contactpersonen.id
+
+Table gezinnen {
+  id int [pk, increment]
+}
+
+Table klanten {
+  id int [pk, increment]
+  adres_id int
+  gezin_id int
+}
+
+Ref: klanten.adres_id > adressen.id
+Ref: klanten.gezin_id > gezinnen.id
+
+// --------------------------------------------------------
+// 4. PRODUCTEN & EIGENSCHAPPEN
+// --------------------------------------------------------
+
+Table producten {
+  id int [pk, increment]
+  categorie_id int
+}
+
+Ref: producten.categorie_id > product_categorieen.id
+
+Table product_kenmerken {
+  id int [pk, increment]
+  product_id int
+  wens_id int
+}
+
+Ref: product_kenmerken.product_id > producten.id
+Ref: product_kenmerken.wens_id > wensen.id
+
+Table product_allergenen {
+  id int [pk, increment]
+  product_id int
+  allergie_id int
+}
+
+Ref: product_allergenen.product_id > producten.id
+Ref: product_allergenen.allergie_id > allergenen.id
+
+// --------------------------------------------------------
+// 5. PROCES (Levering -> Pakket)
+// --------------------------------------------------------
+
+Table leveringen {
+  id int [pk, increment]
+  leverancier_id int
+}
+
+Ref: leveringen.leverancier_id > leveranciers.id
+
+Table levering_producten {
+  id int [pk, increment]
+  levering_id int
+  product_id int
+}
+
+Ref: levering_producten.levering_id > leveringen.id
+Ref: levering_producten.product_id > producten.id
+
+Table voedselpakketten {
+  id int [pk, increment]
+  klant_id int
+}
+
+Ref: voedselpakketten.klant_id > klanten.id
+
+Table voedselpakket_producten {
+  id int [pk, increment]
+  voedselpakket_id int
+  product_id int
+}
+
+Ref: voedselpakket_producten.voedselpakket_id > voedselpakketten.id
+Ref: voedselpakket_producten.product_id > producten.id
+
+// --------------------------------------------------------
+// 6. KLANT SPECIFIEK
+// --------------------------------------------------------
+
+Table klant_wensen {
+  id int [pk, increment]
+  klant_id int
+  wens_id int
+}
+
+Ref: klant_wensen.klant_id > klanten.id
+Ref: klant_wensen.wens_id > wensen.id
+
+Table klant_allergenen {
+  id int [pk, increment]
+  klant_id int
+  allergie_id int
+}
+
+Ref: klant_allergenen.klant_id > klanten.id
+Ref: klant_allergenen.allergie_id > allergenen.id
