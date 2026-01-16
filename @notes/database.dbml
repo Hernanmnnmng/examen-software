@@ -1,106 +1,246 @@
-project examen{
-    note: 'examen software developer'
+// --- LARAVEL USERS & ROLES ---
+
+Table Roles {
+  id int [pk, increment]
+  name varchar [unique] // Bijv: 'admin', 'worker', 'user'
+  guard_name varchar [default: 'web'] // Standaard voor Laravel Permission packages (optioneel)
+
+  created_at timestamp [null]
+  updated_at timestamp [null]
 }
 
-Table klant {
-    id int [pk, increment]
-    userid int [fk]
-
+Table users {
+  id int [pk, increment]
+  role_id int // Verwijst naar Roles.id
+  name varchar
+  email varchar [unique]
+  email_verified_at timestamp [null]
+  password varchar
+  remember_token varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
 }
 
-Table adres{
-    id int [pk, increment]
-    straat varchar
-    huisnummer varchar
-    toevoeging varchar
-    postcode char
-    plaats varchar
+// --- STAMGEGEVENS ---
+
+Table Adressen {
+  ID int [pk, increment]
+  Straat varchar
+  Huisnummer varchar
+  Postcode varchar
+  Plaats varchar
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table gezin {
-    // tussen tabbel voor wensen
-    id int [pk, increment]
-    klantid int [fk]
-    volwassenen int
-    kinderen int
-    babys int
+Table ProductCategorieen {
+  ID int [pk, increment]
+  Naam varchar [unique]
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table gezin-wensen{
-    id int [pk, increment]
-    gezinid int
-    wensenid int
+Table Wensen {
+  ID int [pk, increment]
+  Omschrijving varchar [unique]
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table wensen {
-    //geen allergie allergie appart
-    id int [pk, increment]
-    naam varchar
-    omschrijving varchar
-}
-Table gezin-allergie {
-    id int [pk, increment]
-    gezinid int
-    wensenid int
+Table Allergenen {
+  ID int [pk, increment]
+  Naam varchar [unique]
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table allergie {
-    id int [pk, increment]
-    naam varchar
-    omschrijving varchar
+// --- RELATIES & PARTIJEN ---
+
+Table Leveranciers {
+  ID int [pk, increment]
+  Bedrijfsnaam varchar
+  AdresID int
+  ContactNaam varchar
+  Email varchar
+  Telefoon varchar
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
+Table Klanten {
+  ID int [pk, increment]
+  user_id int [unique] // Koppeling naar users
+  GezinsNaam varchar
+  AdresID int
+  Telefoon varchar
 
-Table product {
-    id int [pk, increment]
-    naam varchar(unique)
-    omschrijving varchar
-    aantal varchar
-    streepjescode char(13 cijfers)
-    categorieid int [fk]
+  Volwassenen int [default: 0]
+  Kinderen int [default: 0]
+  Babys int [default: 0]
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table categorie {
-    id int [pk, increment]
-    naam varchar
-    omschrijving varchar
+// --- PRODUCTEN & VOORRAAD ---
+
+Table Producten {
+  ID int [pk, increment]
+  ProductNaam varchar [unique]
+  EAN varchar [unique]
+  CategorieID int
+  AantalVoorraad int [default: 0]
+  MagazijnLocatie varchar
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table Voedselpakket {
-    id int [pk, increment]
-    klantid int [fk]
-    pakketnummer int
-    uitgiftedatum datetime
+Table ProductKenmerken {
+  ID int [pk, increment]
+  ProductID int
+  WensID int
+
+  IsActief bit [default: 1]
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table leverancier {
-    id int [pk, increment]
-    naam varchar
-    telefoonnummer char
-    conactpersoon
+Table ProductAllergenen {
+  ID int [pk, increment]
+  ProductID int
+  AllergieID int
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table contactpersoon {
-    naam varchar
-    telefoonnummer char
-    email varchar
+// --- PROCES: LEVERINGEN & PAKKETTEN ---
+
+Table Leveringen {
+  ID int [pk, increment]
+  LeverancierID int
+  LeverdatumTijd datetime
+  IsVolgendeLevering bit [default: 0]
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table leverancier-adres{
-    id int [pk, increment]
-    leverancierid int [fk]
-    adresid int [fk]
+Table LeveringProducten {
+  ID int [pk, increment]
+  LeveringID int
+  ProductID int
+  Aantal int
 
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
-Table levering {
-    id int [pk, increment]
-    eerstvolgendelevering date
-    leveringdatum date
+Table Voedselpakketten {
+  ID int [pk, increment]
+  KlantID int
+  DatumSamenstelling datetime [default: `CURRENT_TIMESTAMP`]
+  DatumUitgifte datetime
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
-Table levering-producten {
-    id int [pk, increment]
-    leveringid int [fk]
-    productid int [fk]
-    aanatal int
+
+Table VoedselpakketProducten {
+  ID int [pk, increment]
+  VoedselpakketID int
+  ProductID int
+  Aantal int [default: 1]
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
+
+// --- KLANT SPECIFIEK ---
+
+Table KlantWensen {
+  ID int [pk, increment]
+  KlantID int
+  WensID int
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table KlantAllergenen {
+  ID int [pk, increment]
+  KlantID int
+  AllergieID int
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+// --- REFERENCES ---
+
+// NIEUW: Role Relatie
+Ref: users.role_id > Roles.id
+
+// User koppeling
+Ref: Klanten.user_id - users.id
+
+// Adres Relaties
+Ref: Leveranciers.AdresID > Adressen.ID
+Ref: Klanten.AdresID > Adressen.ID
+
+// Product Relaties
+Ref: Producten.CategorieID > ProductCategorieen.ID
+Ref: ProductAllergenen.ProductID > Producten.ID
+Ref: ProductAllergenen.AllergieID > Allergenen.ID
+Ref: ProductKenmerken.ProductID > Producten.ID
+Ref: ProductKenmerken.WensID > Wensen.ID
+
+// Klant Relaties
+Ref: KlantWensen.KlantID > Klanten.ID
+Ref: KlantWensen.WensID > Wensen.ID
+Ref: KlantAllergenen.KlantID > Klanten.ID
+Ref: KlantAllergenen.AllergieID > Allergenen.ID
+
+// Pakket Relaties
+Ref: Voedselpakketten.KlantID > Klanten.ID
+Ref: VoedselpakketProducten.VoedselpakketID > Voedselpakketten.ID
+Ref: VoedselpakketProducten.ProductID > Producten.ID
+
+// Levering Relaties
+Ref: Leveringen.LeverancierID > Leveranciers.ID
+Ref: LeveringProducten.LeveringID > Leveringen.ID
+Ref: LeveringProducten.ProductID > Producten.ID
+
