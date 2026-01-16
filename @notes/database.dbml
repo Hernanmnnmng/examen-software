@@ -1,9 +1,8 @@
 // --- LARAVEL USERS & ROLES ---
-
 Table Roles {
   id int [pk, increment]
   name varchar [unique] // Bijv: 'admin', 'worker', 'user'
-  guard_name varchar [default: 'web'] // Standaard voor Laravel Permission packages (optioneel)
+  guard_name varchar [default: 'web']
 
   created_at timestamp [null]
   updated_at timestamp [null]
@@ -24,7 +23,7 @@ Table users {
 // --- STAMGEGEVENS ---
 
 Table Adressen {
-  ID int [pk, increment]
+  id int [pk, increment]
   Straat varchar
   Huisnummer varchar
   Postcode varchar
@@ -37,7 +36,7 @@ Table Adressen {
 }
 
 Table ProductCategorieen {
-  ID int [pk, increment]
+  id int [pk, increment]
   Naam varchar [unique]
 
   IsActief bit [default: 1]
@@ -47,7 +46,7 @@ Table ProductCategorieen {
 }
 
 Table Wensen {
-  ID int [pk, increment]
+  id int [pk, increment]
   Omschrijving varchar [unique]
 
   IsActief bit [default: 1]
@@ -57,7 +56,7 @@ Table Wensen {
 }
 
 Table Allergenen {
-  ID int [pk, increment]
+  id int [pk, increment]
   Naam varchar [unique]
 
   IsActief bit [default: 1]
@@ -69,9 +68,19 @@ Table Allergenen {
 // --- RELATIES & PARTIJEN ---
 
 Table Leveranciers {
-  ID int [pk, increment]
+  id int [pk, increment]
   Bedrijfsnaam varchar
-  AdresID int
+  Adresid int
+  contactpersoonid int
+
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table contactpersoon {
+  id int [pk, increment]
   ContactNaam varchar
   Email varchar
   Telefoon varchar
@@ -83,12 +92,21 @@ Table Leveranciers {
 }
 
 Table Klanten {
-  ID int [pk, increment]
+  id int [pk, increment]
   user_id int [unique] // Koppeling naar users
-  GezinsNaam varchar
-  AdresID int
+  Adresid int
   Telefoon varchar
+  gezinid int
 
+  IsActief bit [default: 1]
+  Opmerking text
+  DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table Gezinnen {
+  id int [pk, increment]
+  GezinsNaam varchar
   Volwassenen int [default: 0]
   Kinderen int [default: 0]
   Babys int [default: 0]
@@ -102,10 +120,10 @@ Table Klanten {
 // --- PRODUCTEN & VOORRAAD ---
 
 Table Producten {
-  ID int [pk, increment]
+  id int [pk, increment]
   ProductNaam varchar [unique]
   EAN varchar [unique]
-  CategorieID int
+  Categorieid int
   AantalVoorraad int [default: 0]
   MagazijnLocatie varchar
 
@@ -116,18 +134,20 @@ Table Producten {
 }
 
 Table ProductKenmerken {
-  ID int [pk, increment]
-  ProductID int
-  WensID int
+  id int [pk, increment]
+  Productid int
+  Wensid int
 
   IsActief bit [default: 1]
+  Opmerking text
   DatumAangemaakt datetime [default: `CURRENT_TIMESTAMP`]
+  DatumGewijzigd datetime [default: `CURRENT_TIMESTAMP`]
 }
 
 Table ProductAllergenen {
-  ID int [pk, increment]
-  ProductID int
-  AllergieID int
+  id int [pk, increment]
+  Productid int
+  Allergieid int
 
   IsActief bit [default: 1]
   Opmerking text
@@ -138,10 +158,10 @@ Table ProductAllergenen {
 // --- PROCES: LEVERINGEN & PAKKETTEN ---
 
 Table Leveringen {
-  ID int [pk, increment]
-  LeverancierID int
+  id int [pk, increment]
+  Leverancierid int
   LeverdatumTijd datetime
-  IsVolgendeLevering bit [default: 0]
+  eerstvolgendelevering datetime
 
   IsActief bit [default: 1]
   Opmerking text
@@ -150,9 +170,9 @@ Table Leveringen {
 }
 
 Table LeveringProducten {
-  ID int [pk, increment]
-  LeveringID int
-  ProductID int
+  id int [pk, increment]
+  Leveringid int
+  Productid int
   Aantal int
 
   IsActief bit [default: 1]
@@ -162,8 +182,8 @@ Table LeveringProducten {
 }
 
 Table Voedselpakketten {
-  ID int [pk, increment]
-  KlantID int
+  id int [pk, increment]
+  Klantid int
   DatumSamenstelling datetime [default: `CURRENT_TIMESTAMP`]
   DatumUitgifte datetime
 
@@ -174,9 +194,9 @@ Table Voedselpakketten {
 }
 
 Table VoedselpakketProducten {
-  ID int [pk, increment]
-  VoedselpakketID int
-  ProductID int
+  id int [pk, increment]
+  Voedselpakketid int
+  Productid int
   Aantal int [default: 1]
 
   IsActief bit [default: 1]
@@ -188,9 +208,9 @@ Table VoedselpakketProducten {
 // --- KLANT SPECIFIEK ---
 
 Table KlantWensen {
-  ID int [pk, increment]
-  KlantID int
-  WensID int
+  id int [pk, increment]
+  Klantid int
+  Wensid int
 
   IsActief bit [default: 1]
   Opmerking text
@@ -199,9 +219,9 @@ Table KlantWensen {
 }
 
 Table KlantAllergenen {
-  ID int [pk, increment]
-  KlantID int
-  AllergieID int
+  id int [pk, increment]
+  Klantid int
+  Allergieid int
 
   IsActief bit [default: 1]
   Opmerking text
@@ -211,36 +231,39 @@ Table KlantAllergenen {
 
 // --- REFERENCES ---
 
-// NIEUW: Role Relatie
+// Role Relatie
 Ref: users.role_id > Roles.id
 
 // User koppeling
 Ref: Klanten.user_id - users.id
 
-// Adres Relaties
-Ref: Leveranciers.AdresID > Adressen.ID
-Ref: Klanten.AdresID > Adressen.ID
+// Leverancier Relaties (Compleet gemaakt)
+Ref: Leveranciers.Adresid > Adressen.id
+Ref: Leveranciers.contactpersoonid > contactpersoon.id // NIEUW
+
+// Klant Relaties (Compleet gemaakt)
+Ref: Klanten.Adresid > Adressen.id
+Ref: Klanten.gezinid > Gezinnen.id // NIEUW
 
 // Product Relaties
-Ref: Producten.CategorieID > ProductCategorieen.ID
-Ref: ProductAllergenen.ProductID > Producten.ID
-Ref: ProductAllergenen.AllergieID > Allergenen.ID
-Ref: ProductKenmerken.ProductID > Producten.ID
-Ref: ProductKenmerken.WensID > Wensen.ID
+Ref: Producten.Categorieid > ProductCategorieen.id
+Ref: ProductAllergenen.Productid > Producten.id
+Ref: ProductAllergenen.Allergieid > Allergenen.id
+Ref: ProductKenmerken.Productid > Producten.id
+Ref: ProductKenmerken.Wensid > Wensen.id
 
-// Klant Relaties
-Ref: KlantWensen.KlantID > Klanten.ID
-Ref: KlantWensen.WensID > Wensen.ID
-Ref: KlantAllergenen.KlantID > Klanten.ID
-Ref: KlantAllergenen.AllergieID > Allergenen.ID
+// Klant Wensen/Allergenen Relaties
+Ref: KlantWensen.Klantid > Klanten.id
+Ref: KlantWensen.Wensid > Wensen.id
+Ref: KlantAllergenen.Klantid > Klanten.id
+Ref: KlantAllergenen.Allergieid > Allergenen.id
 
 // Pakket Relaties
-Ref: Voedselpakketten.KlantID > Klanten.ID
-Ref: VoedselpakketProducten.VoedselpakketID > Voedselpakketten.ID
-Ref: VoedselpakketProducten.ProductID > Producten.ID
+Ref: Voedselpakketten.Klantid > Klanten.id
+Ref: VoedselpakketProducten.Voedselpakketid > Voedselpakketten.id
+Ref: VoedselpakketProducten.Productid > Producten.id
 
 // Levering Relaties
-Ref: Leveringen.LeverancierID > Leveranciers.ID
-Ref: LeveringProducten.LeveringID > Leveringen.ID
-Ref: LeveringProducten.ProductID > Producten.ID
-
+Ref: Leveringen.Leverancierid > Leveranciers.id
+Ref: LeveringProducten.Leveringid > Leveringen.id
+Ref: LeveringProducten.Productid > Producten.id
