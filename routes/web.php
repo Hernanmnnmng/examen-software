@@ -17,7 +17,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'Directie' => redirect()->route('dashboard.admin'),
             'Magazijnmedewerker' => redirect()->route('dashboard.worker'),
             'Vrijwilliger' => redirect()->route('dashboard.user'),
-            default => redirect()->route('dashboard.user'),
         };
     })->name('dashboard');
 

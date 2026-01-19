@@ -32,9 +32,9 @@ class AuthenticatedSessionController extends Controller
         
         // Redirect based on user role
         return match($user->role) {
-            'admin' => redirect()->intended(route('dashboard.admin', absolute: false)),
-            'worker' => redirect()->intended(route('dashboard.worker', absolute: false)),
-            'user' => redirect()->intended(route('dashboard.user', absolute: false)),
+            'Directie' => redirect()->intended(route('dashboard.admin', absolute: false)),
+            'Magazijnmedewerker' => redirect()->intended(route('dashboard.worker', absolute: false)),
+            'Vrijwilliger' => redirect()->intended(route('dashboard.user', absolute: false)),
             default => redirect()->intended(route('dashboard.user', absolute: false)),
         };
     }
