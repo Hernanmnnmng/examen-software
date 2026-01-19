@@ -7,9 +7,9 @@
                 <div class="shrink-0 flex items-center">
                     @php
                         $dashboardRoute = match(Auth::user()->role) {
-                            'admin' => 'dashboard.admin',
-                            'worker' => 'dashboard.worker',
-                            'user' => 'dashboard.user',
+                            'Directie' => 'dashboard.admin',
+                            'Magazijnmedewerker' => 'dashboard.worker',
+                            'Vrijwilliger' => 'dashboard.user',
                             default => 'dashboard.user',
                         };
                     @endphp
@@ -22,9 +22,9 @@
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     @php
                         $dashboardRoute = match(Auth::user()->role) {
-                            'admin' => 'dashboard.admin',
-                            'worker' => 'dashboard.worker',
-                            'user' => 'dashboard.user',
+                            'Directie' => 'dashboard.admin',
+                            'Magazijnmedewerker' => 'dashboard.worker',
+                            'Vrijwilliger' => 'dashboard.user',
                             default => 'dashboard.user',
                         };
                     @endphp
@@ -85,9 +85,9 @@
         <div class="pt-2 pb-3 space-y-1">
             @php
                 $dashboardRoute = match(Auth::user()->role) {
-                    'admin' => 'dashboard.admin',
-                    'worker' => 'dashboard.worker',
-                    'user' => 'dashboard.user',
+                    'Directie' => 'dashboard.admin',
+                    'Magazijnmedewerker' => 'dashboard.worker',
+                    'Vrijwilliger' => 'dashboard.user',
                     default => 'dashboard.user',
                 };
             @endphp
