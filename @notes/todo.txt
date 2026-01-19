@@ -1,0 +1,8 @@
+TODO:
+[] voedselpakket aanmaken( getklant, getproducten)
+
+
+sp getallproducten:
+    1. get all klant wensen
+    2. get all klant allergieen
+    3. select alle producten die niet hier to behoren(view met een popup)

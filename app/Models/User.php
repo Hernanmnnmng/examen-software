@@ -47,27 +47,30 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Check if user is admin
+/**
+     * Check of de gebruiker Directie is
+     * (Vervangt isAdmin)
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'Directie';
     }
 
     /**
-     * Check if user is worker
+     * Check of de gebruiker Magazijnmedewerker is
+     * (Vervangt isWorker)
      */
     public function isWorker(): bool
     {
-        return $this->role === 'worker';
+        return $this->role === 'Magazijnmedewerker';
     }
 
     /**
-     * Check if user is regular user
+     * Check of de gebruiker Vrijwilliger is
+     * (Vervangt isUser)
      */
     public function isUser(): bool
     {
-        return $this->role === 'user';
+        return $this->role === 'Vrijwilliger';
     }
 }

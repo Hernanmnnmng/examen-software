@@ -14,23 +14,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
         return match($user->role) {
-            'admin' => redirect()->route('dashboard.admin'),
-            'worker' => redirect()->route('dashboard.worker'),
-            'user' => redirect()->route('dashboard.user'),
+            'Directie' => redirect()->route('dashboard.admin'),
+            'Magazijnmedewerker' => redirect()->route('dashboard.worker'),
+            'Vrijwilliger' => redirect()->route('dashboard.user'),
             default => redirect()->route('dashboard.user'),
         };
     })->name('dashboard');
 
     Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
-        ->middleware('role:admin')
+        ->middleware('role:Directie')
         ->name('dashboard.admin');
 
     Route::get('/dashboard/worker', [DashboardController::class, 'worker'])
-        ->middleware('role:worker')
+        ->middleware('role:Magazijnmedewerker')
         ->name('dashboard.worker');
 
     Route::get('/dashboard/user', [DashboardController::class, 'user'])
-        ->middleware('role:user')
+        ->middleware('role:Vrijwilliger')
         ->name('dashboard.user');
 });
 
@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:Directie'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', UserController::class);
 });
 

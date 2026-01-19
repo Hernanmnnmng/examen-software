@@ -10,34 +10,54 @@ USE Voedselbank;
 -- --------------------------------------------------------
 
 DROP TABLE IF EXISTS
-    -- Oude namen
-    VoedselpakketProducten, Voedselpakketten, LeveringProducten, Leveringen,
-    ProductAllergenen, ProductKenmerken, Producten, KlantAllergenen, KlantWensen,
-    Klanten, Gezinnen, Leveranciers, Contactpersonen, Allergenen, Wensen,
-    ProductCategorieen, Adressen, Users, Roles,
-    -- Nieuwe namen
-    voedselpakket_producten, voedselpakketten, levering_producten, leveringen,
-    product_allergenen, product_kenmerken, producten, klant_allergenen, klant_wensen,
-    klanten, gezinnen, leveranciers, contactpersonen, allergenen, wensen,
-    product_categorieen, adressen, users, roles;
+    VoedselpakketProducten,
+    Voedselpakketten,
+    LeveringProducten,
+    Leveringen,
+    ProductAllergenen,
+    ProductKenmerken,
+    Producten,
+    KlantAllergenen,
+    KlantWensen,
+    Klanten,
+    Gezinnen,
+    Leveranciers,
+    Contactpersonen,
+    Allergenen,
+    Wensen,
+    ProductCategorieen,
+    Adressen,
+    Users,
+    Roles;
+    
+DROP TABLE IF EXISTS
+    voedselpakket_producten,
+    voedselpakketten,
+    levering_producten,
+    leveringen,
+    product_allergenen,
+    product_kenmerken,
+    producten,
+    klant_allergenen,
+    klant_wensen,
+    klanten,
+    gezinnen,
+    leveranciers,
+    contactpersonen,
+    allergenen,
+    wensen,
+    product_categorieen,
+    adressen,
+    users,
+    roles;
+
 
 -- --------------------------------------------------------
 -- 1. AUTHENTICATIE (Laravel Standaard)
 -- --------------------------------------------------------
-
-CREATE TABLE roles (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name VARCHAR(50) NOT NULL,
-  guard_name VARCHAR(50) NOT NULL DEFAULT 'web',
-  created_at TIMESTAMP NULL DEFAULT NULL,
-  updated_at TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY roles_name_unique (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE users (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  role_id INT UNSIGNED NOT NULL,
+  role varchar(30) NOT NULL,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   email_verified_at TIMESTAMP NULL DEFAULT NULL,
@@ -46,8 +66,7 @@ CREATE TABLE users (
   created_at TIMESTAMP NULL DEFAULT NULL,
   updated_at TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY users_email_unique (email),
-  CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles (id)
+  UNIQUE KEY users_email_unique (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -170,7 +189,6 @@ CREATE TABLE producten (
   ean CHAR(13) NOT NULL,
   categorie_id INT UNSIGNED NOT NULL,
   aantal_voorraad INT UNSIGNED NOT NULL DEFAULT 0,
-  magazijn_locatie VARCHAR(50) NULL,
   is_actief BIT(1) NOT NULL DEFAULT 1,
   opmerking VARCHAR(255) NULL,
   datum_aangemaakt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -300,16 +318,12 @@ CREATE TABLE klant_allergenen (
 -- 7. TESTDATA TOEVOEGEN
 -- --------------------------------------------------------
 
-INSERT INTO roles (id, name, guard_name, created_at, updated_at) VALUES
-(1, 'Directie', 'web', NOW(), NOW()),
-(2, 'Magazijnmedewerker', 'web', NOW(), NOW()),
-(3, 'Vrijwilliger', 'web', NOW(), NOW());
-
-INSERT INTO users (id, role_id, name, email, password, created_at, updated_at) VALUES
-(1, 1, 'Directeur Jan', 'directie@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(2, 2, 'Kees Magazijn', 'magazijnmedewerker@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(3, 3, 'Marie Vrijwilliger', 'vrijwilliger@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(4, 3, 'Piet Vrijwilliger', 'piet@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW());
+-- De data wordt nu direct ingevoerd met de rolnaam in plaats van een nummer
+INSERT INTO users (id, role, name, email, password, created_at, updated_at) VALUES
+(1, 'Directie', 'Directeur Jan', 'directie@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(2, 'Magazijnmedewerker', 'Kees Magazijn', 'magazijnmedewerker@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(3, 'Vrijwilliger', 'Marie Vrijwilliger', 'vrijwilliger@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(4, 'Vrijwilliger', 'Piet Vrijwilliger', 'piet@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW());
 
 INSERT INTO adressen (id, straat, huisnummer, postcode, plaats, is_actief, opmerking) VALUES
 (1, 'Industrieweg', '10', '5256PN', 'Maaskantje', 1, 'Hoofdvestiging leverancier'),
@@ -362,14 +376,14 @@ INSERT INTO klanten (id, naam, email, telefoon, adres_id, gezin_id, is_actief) V
 (3, 'Mo El Amrani', 'mo@live.nl', '0633333333', 5, 3, 1),
 (4, 'Petra Pietersen', 'petra@yahoo.com', '0644444444', 3, 4, 1);
 
-INSERT INTO producten (id, product_naam, ean, categorie_id, aantal_voorraad, magazijn_locatie, is_actief) VALUES
-(1, 'Volkoren Brood', '8710400000001', 3, 50, 'Stelling A1', 1),
-(2, 'Halfvolle Melk', '8710400000002', 2, 100, 'Koeling 1', 1),
-(3, 'Pindakaas', '8710400000003', 4, 200, 'Stelling B3', 1),
-(4, 'Aardbeienjam', '8710400000004', 4, 150, 'Stelling B3', 1),
-(5, 'Kipfilet', '8710400000005', 5, 20, 'Vriezer 1', 1),
-(6, 'Appels (Zak)', '8710400000006', 1, 60, 'Stelling C1', 1),
-(7, 'Oude Kaas', '8710400000007', 2, 0, 'Koeling 2', 1);
+INSERT INTO producten (id, product_naam, ean, categorie_id, aantal_voorraad, is_actief) VALUES
+(1, 'Volkoren Brood', '8710400000001', 3, 50, 1),
+(2, 'Halfvolle Melk', '8710400000002', 2, 100, 1),
+(3, 'Pindakaas', '8710400000003', 4, 200, 1),
+(4, 'Aardbeienjam', '8710400000004', 4, 150, 1),
+(5, 'Kipfilet', '8710400000005', 5, 20, 1),
+(6, 'Appels (Zak)', '8710400000006', 1, 60, 1),
+(7, 'Oude Kaas', '8710400000007', 2, 0, 1);
 
 INSERT INTO product_kenmerken (product_id, wens_id) VALUES
 (1, 1), (1, 2), (3, 1), (5, 2);
