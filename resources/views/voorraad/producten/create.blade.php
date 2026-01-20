@@ -26,7 +26,11 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Productnaam</label>
-                            <input type="text" name="product_naam" value="{{ old('product_naam') }}"
+                            <input type="text"
+                                   name="product_naam"
+                                   value="{{ old('product_naam') }}"
+                                   maxlength="20"
+                                   autocomplete="off"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             @error('product_naam')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
