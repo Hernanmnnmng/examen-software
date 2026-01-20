@@ -55,7 +55,17 @@ class VoedselpakketController extends Controller
      */
     public function show($voedselpakketid){
         $voedselpakket = VoedselpakketModel::getvoedselpakketbyid($voedselpakketid);
-        return view('voedselpakketten.show', compact('voedselpakket'));
+
+        // Scenario 2: Pakket bestaat niet meer
+        if(empty($voedselpakket)) {
+             return redirect()->route('voedselpakketten.index')
+                ->with('error', 'dit pakket bestaat niet meer!');
+        }
+
+        // Haal ook de producten op voor de detailweergave
+        $producten = VoedselpakketModel::getvoedselpakketproducten($voedselpakketid);
+
+        return view('voedselpakketten.show', compact('voedselpakket', 'producten'));
     }
 
     /**
@@ -98,6 +108,40 @@ class VoedselpakketController extends Controller
             'producten.*.product_id' => 'required|integer', // Elk product moet een ID hebben
             'producten.*.aantal' => 'required|integer|min:1', // Aantal moet positief zijn
         ]);
+
+        // VERBETERDE SERVER-SIDE VALIDATIE (User Story req)
+        // We controleren hier expliciet of de producten toegestaan zijn en of er genoeg voorraad is.
+        // Dit voorkomt dat we halverwege het opslaan vastlopen of dat de SP faalt.
+
+        // Haal de toegestane producten voor deze klant op (incl. actuele voorraad)
+        $allowedProducts = VoedselpakketModel::getallproducten($validatedData['klant_id']);
+
+        // Maak een map voor snelle lookup: [id => product_object]
+        $productMap = [];
+        foreach($allowedProducts as $ap){
+            $productMap[$ap->id] = $ap;
+        }
+
+        foreach($validatedData['producten'] as $prod){
+            $pid = $prod['product_id'];
+            $requestedQty = $prod['aantal'];
+
+            // Check 1: Is product toegestaan?
+            if(!isset($productMap[$pid])){
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['producten' => "Product ID $pid is niet toegestaan voor deze klant (mogelijk allergie of niet in assortiment)."]);
+            }
+
+            // Check 2: Is er genoeg voorraad?
+            $stock = $productMap[$pid]->aantal_voorraad ?? 0;
+            if($requestedQty > $stock){
+                $name = $productMap[$pid]->naam ?? "Product $pid";
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['producten' => "Onvoldoende voorraad voor '$name'. Gevraagd: $requestedQty, Beschikbaar: $stock."]);
+            }
+        }
 
         // 2. Genereer uniek pakketnummer
         // Formaat: VP-{random 8 cijfers}
@@ -145,8 +189,18 @@ class VoedselpakketController extends Controller
      * DELETE /voedselpakketten/{id}
      */
     public function destroy($voedselpakketid){
-        // (Optioneel: Check hier ook op uitgifte datum voor extra veiligheid,
-        // hoewel de view knop al verborgen is)
+        // SECUURHEIDS CHECK: Pakket controleren
+        $voedselpakket = VoedselpakketModel::getvoedselpakketbyid($voedselpakketid);
+
+        if(empty($voedselpakket)){
+             return redirect()->route('voedselpakketten.index')->with('error', 'Pakket niet gevonden.');
+        }
+
+        // Als het pakket al uitgereikt is, mag het NIET verwijderd worden.
+        if($voedselpakket[0]->datum_uitgifte != null) {
+            return redirect()->route('voedselpakketten.index')
+                ->with('error', 'Dit pakket is al uitgereikt en kan niet verwijderd worden.');
+        }
 
         $result = VoedselpakketModel::deletevoedselpakket($voedselpakketid);
 
@@ -177,7 +231,17 @@ class VoedselpakketController extends Controller
             'producten.*.aantal' => 'required|integer|min:1',
         ]);
 
-        // 3. Synchroniseer producten (Aanmaken, Updaten, Verwijderen)
+        // 3. SECUURHEIDS CHECK: Valideer voorraad en toegestane producten
+        // Haal de toegestane producten voor deze klant op (incl. actuele voorraad)
+        $allowedProducts = VoedselpakketModel::getallproducten($validatedData['klant_id']);
+
+        // Maak een map voor snelle lookup: [id => product_object]
+        $productMap = [];
+        foreach($allowedProducts as $ap){
+            $productMap[$ap->id] = $ap;
+        }
+
+        // 4. Synchroniseer producten (Aanmaken, Updaten, Verwijderen)
 
         // A. Haal oude producten op om te vergelijken
         $oldProductsRaw = VoedselpakketModel::getvoedselpakketproducten($voedselpakketid);
@@ -191,11 +255,31 @@ class VoedselpakketController extends Controller
             $pid = $newProd['product_id'];
             $qty = $newProd['aantal'];
 
+            // VALIDATIE 1: Mag deze klant dit product hebben?
+            if (!isset($productMap[$pid])) {
+                // Als het product al in het pakket zat (uit oude lijst), is het misschien nu niet meer toegestaan?
+                // Of als het nieuw toegevoegd wordt.
+                // In beide gevallen: Blokkeren.
+                 return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['producten' => "Product ID $pid is niet (meer) toegestaan voor deze klant."]);
+            }
+
+            // VALIDATIE 2: Voorraad Check
+            $stock = $productMap[$pid]->aantal_voorraad ?? 0;
+            $oldQty = $oldProducts[$pid] ?? 0;
+            $diff = $qty - $oldQty;
+
+            // Als we meer willen (diff > 0), checken of dat meerdere op voorraad is
+            if ($diff > 0 && $diff > $stock) {
+                 $name = $productMap[$pid]->naam ?? "Product $pid";
+                 return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['producten' => "Onvoldoende voorraad voor '$name'. Extra nodig: $diff, Beschikbaar: $stock."]);
+            }
+
             if(isset($oldProducts[$pid])){
                 // BESTAAT AL: Check of aantal gewijzigd is
-                $oldQty = $oldProducts[$pid];
-                $diff = $qty - $oldQty;
-
                 if($diff != 0){
                     // Update in DB (inclusief voorraad correctie via 'verschil')
                     VoedselpakketModel::updatevoedselpakketproduct($voedselpakketid, [
@@ -241,6 +325,18 @@ class VoedselpakketController extends Controller
      * POST /voedselpakketten/{id}/deliver
      */
     public function deliver($voedselpakketid){
+        // SECUURHEIDS CHECK:
+        $voedselpakket = VoedselpakketModel::getvoedselpakketbyid($voedselpakketid);
+
+        if(empty($voedselpakket)){
+             return redirect()->route('voedselpakketten.index')->with('error', 'Pakket niet gevonden.');
+        }
+
+        if($voedselpakket[0]->datum_uitgifte != null) {
+            return redirect()->route('voedselpakketten.index')
+                ->with('error', 'Dit pakket is al reeds uitgereikt.');
+        }
+
         // Roep SP aan om datum_uitgifte te zetten
         $result = VoedselpakketModel::delivervoedselpakket($voedselpakketid);
 

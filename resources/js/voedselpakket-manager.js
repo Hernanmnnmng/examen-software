@@ -256,27 +256,14 @@ export class VoedselpakketManager {
      * Update voornamelijk het 'max' attribuut van het aantal-veld.
      */
     handleProductSelection($select) {
-        const stock = $select.find(':selected').data('stock');
-        const $input = $select.closest('.product-row').find('input.quantity-input');
-
-        if (stock !== undefined) {
-            $input.attr('max', stock);
-
-            // Als huidige invoer hoger is dan voorraad, direct corrigeren
-            if(parseInt($input.val()) > stock) {
-                 $input.val(stock);
-                 this.showToast(`Aantal automatisch aangepast naar maximum: ${stock}`, 'warning');
-            }
-        }
+        // Geen client-side restricties meer hier
     }
 
     /**
      * Validatie van de aantallen.
-     * Zorgt dat min 1 is, en max niet overschreden wordt.
+     * Zorgt dat min 1 is.
      */
     handleQuantityChange(event, $input) {
-        const $select = $input.closest('.product-row').find('select');
-        const stock = $select.find(':selected').data('stock');
         let val = parseInt($input.val());
 
         // Als veld leeg is of ongeldig, zet terug naar 1 (alleen bij focus verlies 'blur')
@@ -289,12 +276,6 @@ export class VoedselpakketManager {
         if (!isNaN(val) && val < 1) {
             $input.val(1);
             val = 1;
-        }
-
-        // Maximum check
-        if (stock !== undefined && val > stock) {
-            $input.val(stock);
-            this.showToast(`Er zijn maar ${stock} stuks op voorraad.`, 'error');
         }
     }
 
