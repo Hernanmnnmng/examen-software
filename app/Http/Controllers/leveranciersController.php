@@ -25,7 +25,8 @@ class leveranciersController extends Controller
     }
 
     public function storeLeverancier(Request $request) 
-    {
+    {  
+        // data 
         $data = $request->validate([
              'bedrijfsnaam'  =>  'required'
             ,'straat'        =>  'required'
@@ -155,7 +156,7 @@ class leveranciersController extends Controller
             'eerstvolgende_levering' => 'required|date',
             'leverancier_id' => 'required|integer'
         ]);
-        
+
         $id = $data['leverancier_id'];
         $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
         
