@@ -5,8 +5,8 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="{ 
-        showErrorModal: false, 
+    <div class="py-12" x-data="{
+        showErrorModal: false,
         errorMessage: '',
         showError(msg) {
             this.errorMessage = msg;
@@ -47,17 +47,25 @@
                                 <span class="w-2 h-2 rounded-full mr-2 {{ $pakket->datum_uitgifte ? 'bg-green-500' : 'bg-blue-500' }}"></span>
                                 {{ $pakket->datum_uitgifte ? 'Uitgereikt op ' . \Carbon\Carbon::parse($pakket->datum_uitgifte)->format('d-m-Y') : 'Klaar om uitgereikt te worden' }}
                             </span>
-                            
+
                             {{-- Action buttons --}}
                             @if(!$pakket->datum_uitgifte)
                                 <a href="{{ route('voedselpakketten.edit', $pakket->id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     Bewerken
                                 </a>
-                                
+
                                 <form method="POST" action="{{ route('voedselpakketten.deliver', $pakket->id) }}" onsubmit="return confirm('Weet u zeker dat u dit pakket wilt uitreiken?');" class="inline">
                                     @csrf
                                     <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                         Afgeven
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{{ route('voedselpakketten.destroy', $pakket->id) }}" onsubmit="return confirm('Weet u zeker dat u dit voedselpakket wilt verwijderen?');" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        Verwijderen
                                     </button>
                                 </form>
                             @else
@@ -125,8 +133,8 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
 
         <!-- Error Modal using Alpine.js -->
-        <div x-show="showErrorModal" 
-                class="fixed inset-0 z-50 overflow-y-auto" 
+        <div x-show="showErrorModal"
+                class="fixed inset-0 z-50 overflow-y-auto"
                 style="display: none;"
                 x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0"
@@ -134,7 +142,7 @@
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0">
-            
+
             <!-- Backdrop -->
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showErrorModal = false"></div>
 
