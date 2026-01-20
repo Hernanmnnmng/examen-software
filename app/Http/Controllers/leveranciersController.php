@@ -23,12 +23,41 @@ class leveranciersController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function storeLeverancier(Request $request) 
     {
-        //
+        $data = $request->validate([
+             'bedrijfsnaam'  =>  'required'
+            ,'straat'        =>  'required'
+            ,'huisnummer'    =>  'required'
+            ,'postcode'      =>  'required'
+            ,'plaats'        =>  'required'
+            ,'contact_naam'  =>  'required'
+            ,'email'         =>  'required'
+            ,'telefoon'      =>  'required'
+        ]);
+
+        $name = $data['bedrijfsnaam'];
+        $checkNameExists = Leverancier::SP_GetLeverancierByBedrijfsnaam($name);
+
+        $count = $checkNameExists[0]->totaal ?? 0;
+
+        if ($count > 0) {
+            return redirect()->back()->with(
+                'error', 'deze leverancier bestaat al'
+            );
+        } else {
+            $result = Leverancier::SP_CreateNewLeverancier($data);
+        }
+
+        if($result) {
+            return redirect()->back()->with(
+                'success', 'leverancier succesvol toegevoegd'
+            );
+        } else {
+            return redirect()->back()->with(
+                'error', 'leverancier niet succesvol toegevoegd'
+            );
+        }
     }
 
     /**

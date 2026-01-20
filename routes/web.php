@@ -25,9 +25,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Directie')
         ->name('dashboard.admin');
 
+    // levering & leverancier routes begin
+
     Route::get('/admin/leveranciers', [leveranciersController::class, 'index'])
         ->middleware('role:Directie')
         ->name('leveranciers.index');
+
+    Route::post('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'storeLeverancier'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.storeLeverancier');
+    
+    Route::post('/admin/leveranciers/nieuwlevering', [leveranciersController::class, 'storeLevering'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.storeLevering');
+
+    // levering & leverancier routes eind
 
     Route::get('/dashboard/worker', [DashboardController::class, 'worker'])
         ->middleware('role:Magazijnmedewerker')
