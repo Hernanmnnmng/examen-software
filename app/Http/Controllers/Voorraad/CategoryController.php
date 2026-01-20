@@ -94,6 +94,7 @@ class CategoryController extends Controller
                 ->route('voorraad.categorieen.index')
                 ->with('success', 'Categorie aangemaakt');
         } catch (QueryException $e) {
+            report($e);
             return back()
                 ->withInput()
                 ->with('error', $this->friendlyDbMessage($e));
@@ -153,6 +154,7 @@ class CategoryController extends Controller
                 ->route('voorraad.categorieen.index')
                 ->with('success', 'Categorie gewijzigd');
         } catch (QueryException $e) {
+            report($e);
             return back()
                 ->withInput()
                 ->with('error', $this->friendlyDbMessage($e));
@@ -186,6 +188,7 @@ class CategoryController extends Controller
                 ->route('voorraad.categorieen.index')
                 ->with('success', 'Categorie verwijderd');
         } catch (QueryException $e) {
+            report($e);
             return redirect()
                 ->route('voorraad.categorieen.index')
                 ->with('error', $this->friendlyDbMessage($e));

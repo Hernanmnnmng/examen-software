@@ -149,6 +149,7 @@ class ProductController extends Controller
                 ->route('voorraad.producten.index')
                 ->with('success', 'Product aangemaakt');
         } catch (QueryException $e) {
+            report($e);
             return back()
                 ->withInput()
                 ->with('error', $this->friendlyDbMessage($e));
@@ -217,6 +218,7 @@ class ProductController extends Controller
                 ->route('voorraad.producten.index')
                 ->with('success', 'Wijzigingen opgeslagen');
         } catch (QueryException $e) {
+            report($e);
             return back()
                 ->withInput()
                 ->with('error', $this->friendlyDbMessage($e));
@@ -255,6 +257,7 @@ class ProductController extends Controller
                 ->route('voorraad.producten.index')
                 ->with('success', 'Product verwijderd');
         } catch (QueryException $e) {
+            report($e);
             return redirect()
                 ->route('voorraad.producten.index')
                 ->with('error', $this->friendlyDbMessage($e));
