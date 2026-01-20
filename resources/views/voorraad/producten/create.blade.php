@@ -1,4 +1,13 @@
 <x-app-layout>
+    {{--
+        Voorraadbeheer - Product toevoegen
+        Author: Hernan Martino Molina
+
+        Client-side guards:
+        - Productnaam max 20 chars
+        - EAN strictly 13 digits
+        - Aantal in voorraad max 1000
+    --}}
     <x-slot name="header">
         <div class="flex justify-between items-center gap-4 flex-wrap">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -16,6 +25,7 @@
             @if(session('error'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                     @php
+                        // (Hernan Martino Molina) Strip technical DB details from some errors.
                         $rawError = session('error');
                         $errorMessage = $rawError;
 
@@ -49,6 +59,7 @@
                                    maxlength="20"
                                    autocomplete="off"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            {{-- Field-level validation error --}}
                             @error('product_naam')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                             @enderror
@@ -81,8 +92,10 @@
                                    maxlength="13"
                                    pattern="^[0-9]{13}$"
                                    title="Vul exact 13 cijfers in (alleen nummers)."
+                                   {{-- Keep input digits-only and hard-cap at 13 --}}
                                    oninput="this.value=this.value.replace(/\D/g,'').slice(0,13);"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            {{-- Field-level validation error --}}
                             @error('ean')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                             @enderror
@@ -97,8 +110,10 @@
                                    max="1000"
                                    step="1"
                                    inputmode="numeric"
+                                   {{-- Clamp value to 0..1000 client-side --}}
                                    oninput="if(this.value==='') return; const n=parseInt(this.value,10); if(Number.isNaN(n)) { this.value='0'; return; } this.value=Math.max(0, Math.min(1000, n));"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            {{-- Field-level validation error --}}
                             @error('aantal_voorraad')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                             @enderror

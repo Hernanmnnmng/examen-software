@@ -1,4 +1,10 @@
 <x-app-layout>
+    {{--
+        Voorraadbeheer - Categorie aanmaken
+        Author: Hernan Martino Molina
+
+        Form posts to voorraad.categorieen.store.
+    --}}
     <x-slot name="header">
         <div class="flex justify-between items-center gap-4 flex-wrap">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -13,6 +19,7 @@
 
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+            {{-- Error message flashed by controller --}}
             @if(session('error'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block sm:inline">{{ session('error') }}</span>
@@ -28,6 +35,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categorienaam</label>
                             <input type="text" name="naam" value="{{ old('naam') }}"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            {{-- Field-level validation error --}}
                             @error('naam')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                             @enderror

@@ -11,8 +11,19 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use Throwable;
 
+/**
+ * Voorraadbeheer: Product CRUD + listing.
+ *
+ * Notes (Hernan Martino Molina):
+ * - On MySQL we prefer stored procedures (exam requirement).
+ * - On SQLite/testing we fall back to Query Builder so the app/tests remain runnable.
+ * - Errors are flashed to the session as 'success'/'error' and shown by the Blade views.
+ */
 class ProductController extends Controller
 {
+    /**
+     * Product overview with optional EAN filter and safe sorting.
+     */
     public function index(Request $request): View
     {
         $ean = (string) $request->query('ean', '');
@@ -89,6 +100,9 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Show create form.
+     */
     public function create(): View
     {
         $categorieen = $this->getCategorieen();
@@ -98,6 +112,9 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Create a new product.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -141,6 +158,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Show edit form.
+     */
     public function edit(int $id): View
     {
         $categorieen = $this->getCategorieen();
@@ -161,6 +181,9 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Update an existing product.
+     */
     public function update(Request $request, int $id): RedirectResponse
     {
         $validated = $request->validate([
@@ -203,6 +226,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Delete a product.
+     */
     public function destroy(int $id): RedirectResponse
     {
         try {
@@ -240,6 +266,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Categories for dropdowns.
+     */
     private function getCategorieen()
     {
         if (DB::connection()->getDriverName() === 'mysql') {
@@ -262,6 +291,12 @@ class ProductController extends Controller
             ->get();
     }
 
+    /**
+     * Convert low-level DB exceptions to a user-facing message.
+     *
+     * (Hernan Martino Molina) We keep the controller DB-focused; views can further
+     * "prettify" overly-technical messages if needed.
+     */
     private function friendlyDbMessage(QueryException $e): string
     {
         // Prefer MySQL SIGNAL messages (SQLSTATE 45000) when provided.

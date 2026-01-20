@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Route;
 | This file is loaded from routes/web.php via a directory loader so teammates
 | can add their own routes/modules without editing routes/web.php.
 |
+| Author: Hernan Martino Molina
+| Notes:
+| - We group everything behind auth.
+| - Producten are accessible by Directie + Magazijnmedewerker.
+| - Categorieën are Directie-only.
+|
 */
 
 Route::middleware(['auth'])->group(function () {
@@ -21,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
         ->prefix('voorraad')
         ->name('voorraad.')
         ->group(function () {
+            // Product overview is also the voorraad "home" page.
             Route::get('/', [ProductController::class, 'index'])->name('producten.index');
             Route::get('/producten/create', [ProductController::class, 'create'])->name('producten.create');
             Route::post('/producten', [ProductController::class, 'store'])->name('producten.store');

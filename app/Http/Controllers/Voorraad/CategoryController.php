@@ -10,8 +10,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Throwable;
 
+/**
+ * Voorraadbeheer: Category CRUD.
+ *
+ * Notes (Hernan Martino Molina):
+ * - Uses MySQL stored procedures when available.
+ * - Falls back to Query Builder for SQLite/testing or when SPs are missing.
+ */
 class CategoryController extends Controller
 {
+    /**
+     * List active categories.
+     */
     public function index(): View
     {
         $categorieen = [];
@@ -51,11 +61,17 @@ class CategoryController extends Controller
         ]);
     }
 
+    /**
+     * Show create form.
+     */
     public function create(): View
     {
         return view('voorraad.categorieen.create');
     }
 
+    /**
+     * Create a category.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -87,6 +103,9 @@ class CategoryController extends Controller
         }
     }
 
+    /**
+     * Show edit form.
+     */
     public function edit(int $id): View
     {
         $categorie = null;
@@ -111,6 +130,9 @@ class CategoryController extends Controller
         ]);
     }
 
+    /**
+     * Update a category.
+     */
     public function update(Request $request, int $id): RedirectResponse
     {
         $validated = $request->validate([
@@ -140,6 +162,9 @@ class CategoryController extends Controller
         }
     }
 
+    /**
+     * Delete a category.
+     */
     public function destroy(int $id): RedirectResponse
     {
         try {
@@ -172,6 +197,9 @@ class CategoryController extends Controller
         }
     }
 
+    /**
+     * Convert low-level DB exceptions to a user-facing message.
+     */
     private function friendlyDbMessage(QueryException $e): string
     {
         $message = $e->getMessage();

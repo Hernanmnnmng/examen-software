@@ -1,4 +1,13 @@
 <x-app-layout>
+    {{--
+        Voorraadbeheer - Producten overzicht
+        Author: Hernan Martino Molina
+
+        Includes:
+        - EAN search (GET)
+        - Safe sorting links
+        - Flash success/error messages from the controller
+    --}}
     <x-slot name="header">
         <div class="flex justify-between items-center gap-4 flex-wrap">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -51,6 +60,8 @@
             @if(session('error'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                     @php
+                        // (Hernan Martino Molina) Some DB errors can be very technical (SQLSTATE...).
+                        // Here we try to extract the human-friendly part only.
                         $rawError = session('error');
                         $errorMessage = $rawError;
 

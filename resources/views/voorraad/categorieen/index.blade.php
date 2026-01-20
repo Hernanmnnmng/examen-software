@@ -1,4 +1,10 @@
 <x-app-layout>
+    {{--
+        Voorraadbeheer - Categorieën overzicht
+        Author: Hernan Martino Molina
+
+        This screen lists active categories and provides links/actions for CRUD.
+    --}}
     <x-slot name="header">
         <div class="flex justify-between items-center gap-4 flex-wrap">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -21,6 +27,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {{-- Flash messages coming from controller redirects --}}
             @if(session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block sm:inline">{{ session('success') }}</span>
@@ -57,10 +64,12 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex gap-2">
+                                                {{-- Edit action --}}
                                                 <a href="{{ route('voorraad.categorieen.edit', $cat->id) }}"
                                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                                                     Wijzigen
                                                 </a>
+                                                {{-- Delete action (protected by a confirm dialog) --}}
                                                 <form method="POST" action="{{ route('voorraad.categorieen.destroy', $cat->id) }}"
                                                       class="inline"
                                                       onsubmit="return confirm('Weet je zeker dat je deze categorie wilt verwijderen?');">
