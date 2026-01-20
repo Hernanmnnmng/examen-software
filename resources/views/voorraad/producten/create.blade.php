@@ -51,7 +51,16 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">EAN (13 cijfers)</label>
-                            <input type="text" name="ean" value="{{ old('ean') }}"
+                            <input type="text"
+                                   name="ean"
+                                   value="{{ old('ean') }}"
+                                   inputmode="numeric"
+                                   autocomplete="off"
+                                   minlength="13"
+                                   maxlength="13"
+                                   pattern="^[0-9]{13}$"
+                                   title="Vul exact 13 cijfers in (alleen nummers)."
+                                   oninput="this.value=this.value.replace(/\D/g,'').slice(0,13);"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             @error('ean')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
@@ -60,7 +69,14 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Aantal in voorraad</label>
-                            <input type="number" min="0" name="aantal_voorraad" value="{{ old('aantal_voorraad', 0) }}"
+                            <input type="number"
+                                   name="aantal_voorraad"
+                                   value="{{ old('aantal_voorraad', 0) }}"
+                                   min="0"
+                                   max="1000"
+                                   step="1"
+                                   inputmode="numeric"
+                                   oninput="if(this.value==='') return; const n=parseInt(this.value,10); if(Number.isNaN(n)) { this.value='0'; return; } this.value=Math.max(0, Math.min(1000, n));"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             @error('aantal_voorraad')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
