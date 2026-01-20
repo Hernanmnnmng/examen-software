@@ -107,17 +107,17 @@ class VoedselpakketController extends Controller
         foreach($oldProductsRaw as $p){
             $oldProducts[$p->product_id] = $p->aantal;
         }
-        
+
         // Process New Products
         foreach($validatedData['producten'] as $newProd){
             $pid = $newProd['product_id'];
             $qty = $newProd['aantal'];
-            
+
             if(isset($oldProducts[$pid])){
                 // Update
                 $oldQty = $oldProducts[$pid];
                 $diff = $qty - $oldQty;
-                
+
                 if($diff != 0){
                     VoedselpakketModel::updatevoedselpakketproduct($voedselpakketid, [
                         'productid' => $pid,
@@ -135,16 +135,16 @@ class VoedselpakketController extends Controller
                 ]);
             }
         }
-        
+
         // Process Removed Products
         foreach($oldProducts as $pid => $oldQty){
             VoedselpakketModel::updatevoedselpakketproduct($voedselpakketid, [
                 'productid' => $pid,
                 'aantal' => 0,
-                'verschil' => 0 
+                'verschil' => 0
             ]);
         }
-        
+
         return redirect()->route('voedselpakketten.index')->with('success', 'Voedselpakket succesvol bijgewerkt.');
     }
 }

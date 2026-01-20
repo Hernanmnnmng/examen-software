@@ -7,16 +7,16 @@ export class VoedselpakketManager {
         this.submitBtnSelector = config.submitBtnSelector; // e.g. 'button[type="submit"]'
         this.toastContainerId = config.toastContainerId || 'toast-container';
         this.productsEndpoint = config.productsEndpoint || '/voedselpakketten/producten/';
-        
+
         this.productsData = [];
         this.rowCount = 0;
-        
+
         // Bind methods
         this.handleKlantChange = this.handleKlantChange.bind(this);
         this.addProductRow = this.addProductRow.bind(this);
         this.updateProductDropdownsAndValidate = this.updateProductDropdownsAndValidate.bind(this);
         this.showToast = this.showToast.bind(this);
-        
+
         this.init();
     }
 
@@ -28,7 +28,7 @@ export class VoedselpakketManager {
 
         // Add Button
         $addBtn.on('click', this.addProductRow);
-        
+
         // Klant Change
         $klantSelect.on('change', (e) => this.handleKlantChange($(e.target).val()));
 
@@ -41,12 +41,12 @@ export class VoedselpakketManager {
         // Product Select Change
         $container.on('change', 'select[name^="producten"]', (e) => {
             this.updateProductDropdownsAndValidate();
-            
+
             // Validate stock max immediately upon selection
             const $select = $(e.target);
             const stock = $select.find(':selected').data('stock');
             const $input = $select.siblings('input[type="number"]');
-            
+
             if (stock !== undefined) {
                 $input.attr('max', stock);
                 let val = parseInt($input.val());
@@ -131,7 +131,7 @@ export class VoedselpakketManager {
         }
 
         this.rowCount++;
-        // Use a generic index, or stick to rowCount. 
+        // Use a generic index, or stick to rowCount.
         // Note: For Update, we might want to use array indices or just incremental.
         // Laravel handles `producten` array fine.
 
@@ -147,12 +147,12 @@ export class VoedselpakketManager {
                 <button type="button" class="remove-row-btn px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-200">Verwijder</button>
             </div>
         `;
-        
+
         const $container = $(`#${this.containerId}`);
         $container.append(html);
 
         const $newSelect = $container.children().last().find('select');
-        
+
         // Populate options based on current productsData
         this.populateSelect($newSelect, productId);
 
@@ -162,22 +162,22 @@ export class VoedselpakketManager {
     populateSelect($select, selectedValue) {
         // Clear except first
         $select.find('option:not(:first)').remove();
-        
+
         this.productsData.forEach(prod => {
             const stock = prod.aantal_voorraad || prod.voorraad;
-            // For edit mode: if this product is the one selected, we might need to add its OLD stock to the current available stock 
-            // to represent the "true" max if we were to unselect it. 
+            // For edit mode: if this product is the one selected, we might need to add its OLD stock to the current available stock
+            // to represent the "true" max if we were to unselect it.
             // logic is tricky. For now use available stock.
-            
+
              const option = $('<option></option>')
                     .attr('value', prod.id)
                     .text(`${prod.product_naam || prod.naam} (${stock} beschikbaar)`)
                     .data('stock', stock);
-            
+
             if(selectedValue && parseInt(selectedValue) === prod.id) {
                 option.prop('selected', true);
             }
-            
+
             $select.append(option);
         });
     }
@@ -200,7 +200,7 @@ export class VoedselpakketManager {
             const $select = $(this);
             const currentVal = parseInt($select.val());
             const $row = $select.closest('.product-row');
-            
+
             // Cleanup error state
             $select.removeClass('border-red-500 bg-red-50 text-red-900').addClass('border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300');
             $row.find('.error-msg').remove();
@@ -210,20 +210,20 @@ export class VoedselpakketManager {
             // Also check if currentVal is valid in productsData (Client constraint)
 
             // 1. Check Constraint
-            
-            // If we have productsData loaded, verify. 
+
+            // If we have productsData loaded, verify.
             // (If fetching, this runs after fetch)
-            
+
             let isValidForClient = true;
             let currentText = "";
             let currentStock = 0;
-            
+
             if (currentVal) {
                 const productInList = self.productsData.find(p => p.id === currentVal);
                 if (!productInList) {
                     isValidForClient = false;
                     // Try to retrieve text from existing option if possible, or we are blind
-                    currentText = $select.find('option:selected').text(); 
+                    currentText = $select.find('option:selected').text();
                     if(!currentText || currentText === '-- Selecteer product --') currentText = "Onbekend Product";
                 } else {
                     validProductCount++;
@@ -234,7 +234,7 @@ export class VoedselpakketManager {
             // Re-populate options to refresh disabled states
             $select.empty();
             $select.append('<option value="">-- Selecteer product --</option>');
-            
+
             self.productsData.forEach(prod => {
                 const stock = prod.aantal_voorraad || prod.voorraad;
                 const option = $('<option></option>')
@@ -261,7 +261,7 @@ export class VoedselpakketManager {
                     .text(`${currentText} (Niet toegestaan)`)
                     .prop('selected', true)
                     .prop('disabled', true);
-                
+
                 $select.append(invalidOption);
                 $select.addClass('border-red-500 bg-red-50 text-red-900').removeClass('border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300');
                 $row.append('<p class="error-msg text-xs text-red-600 mt-1">Dit product mag niet voor deze klant. Verwijder of wijzig.</p>');
@@ -289,7 +289,7 @@ export class VoedselpakketManager {
                 <button type="button" class="ml-4 font-bold close-toast">&times;</button>
             </div>
         `);
-        
+
         toast.find('.close-toast').on('click', function() { $(this).parent().remove(); });
 
         $(`#${this.toastContainerId}`).append(toast);
@@ -299,7 +299,7 @@ export class VoedselpakketManager {
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
-    
+
     // Method to load initial rows (for Edit)
     loadExistingProducts(products) {
         // products is array of {product_id, aantal}

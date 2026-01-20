@@ -21,10 +21,10 @@
                     <form method="POST" action="{{ route('voedselpakketten.update', $voedselpakket[0]->id) }}" class="space-y-6">
                         @csrf
                         {{-- Note: Route uses POST, but often Laravel updates use PUT/PATCH. The route list said POST .../update --}}
-                        
+
                         <!-- Klant ID (Hidden, logic assumes we don't change customer for existing package to avoid stock explosion complexity on client switch) -->
                         <input type="hidden" id="klant_id" name="klant_id" value="{{ $voedselpakket[0]->klant_id }}">
-                        
+
                         <!-- Producten Toevoegen -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Producten</label>
@@ -70,7 +70,7 @@
                 manager.handleKlantChange(klantId, true).then(() => {
                     // Load Existing Products provided by Controller
                     const existingProducts = @json($producten);
-                    
+
                     existingProducts.forEach(prod => {
                         manager.addProductRow(null, {
                             product_id: prod.product_id,
