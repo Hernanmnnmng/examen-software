@@ -31,6 +31,33 @@
                     <x-nav-link :href="route($dashboardRoute)" :active="request()->routeIs(['dashboard', 'dashboard.admin', 'dashboard.worker', 'dashboard.user'])">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(Auth::user()->role === 'Directie')
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Gebruikers') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('leveranciers.index')" :active="request()->routeIs('leveranciers.*')">
+                            {{ __('Leveranciers') }}
+                        </x-nav-link>
+                         <x-nav-link :href="route('voorraad.producten.index')" :active="request()->routeIs('voorraad.producten.*')">
+                            {{ __('Producten') }}
+                        </x-nav-link>
+                         <x-nav-link :href="route('voorraad.categorieen.index')" :active="request()->routeIs('voorraad.categorieen.*')">
+                            {{ __('Categorieën') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->role === 'Magazijnmedewerker')
+                        <x-nav-link :href="route('voorraad.producten.index')" :active="request()->routeIs('voorraad.producten.*')">
+                            {{ __('Voorraad') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->role === 'Vrijwilliger')
+                        <x-nav-link :href="route('voedselpakketten.index')" :active="request()->routeIs('voedselpakketten.*')">
+                            {{ __('Voedselpakketten') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -94,6 +121,33 @@
             <x-responsive-nav-link :href="route($dashboardRoute)" :active="request()->routeIs(['dashboard', 'dashboard.admin', 'dashboard.worker', 'dashboard.user'])">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(Auth::user()->role === 'Directie')
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Gebruikers') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('leveranciers.index')" :active="request()->routeIs('leveranciers.*')">
+                    {{ __('Leveranciers') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('voorraad.producten.index')" :active="request()->routeIs('voorraad.producten.*')">
+                    {{ __('Producten') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('voorraad.categorieen.index')" :active="request()->routeIs('voorraad.categorieen.*')">
+                    {{ __('Categorieën') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->role === 'Magazijnmedewerker')
+                <x-responsive-nav-link :href="route('voorraad.producten.index')" :active="request()->routeIs('voorraad.producten.*')">
+                    {{ __('Voorraad') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->role === 'Vrijwilliger')
+                <x-responsive-nav-link :href="route('voedselpakketten.index')" :active="request()->routeIs('voedselpakketten.*')">
+                    {{ __('Voedselpakketten') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

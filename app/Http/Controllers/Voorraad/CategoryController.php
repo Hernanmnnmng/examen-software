@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Voorraad;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\ProductCategorie;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,19 +38,17 @@ class CategoryController extends Controller
                     if ((int) $mysqlCode !== 1305) {
                         throw $e;
                     }
-                    // Fall back if procedure doesn't exist
-                    $categorieen = DB::table('product_categorieen')
-                        ->select(['id', 'naam'])
-                        ->where('is_actief', '=', 1)
+                    // Fall back if procedure doesn't exist (Eloquent model)
+                    $categorieen = ProductCategorie::query()
+                        ->active()
                         ->orderBy('naam', 'asc')
-                        ->get();
+                        ->get(['id', 'naam']);
                 }
             } else {
-                $categorieen = DB::table('product_categorieen')
-                    ->select(['id', 'naam'])
-                    ->where('is_actief', '=', 1)
+                $categorieen = ProductCategorie::query()
+                    ->active()
                     ->orderBy('naam', 'asc')
-                    ->get();
+                    ->get(['id', 'naam']);
             }
         } catch (Throwable $e) {
             report($e);
@@ -82,11 +82,9 @@ class CategoryController extends Controller
             if (DB::connection()->getDriverName() === 'mysql') {
                 DB::select('CALL sp_category_create(?)', [$validated['naam']]);
             } else {
-                DB::table('product_categorieen')->insert([
+                ProductCategorie::query()->create([
                     'naam' => $validated['naam'],
                     'is_actief' => 1,
-                    'datum_aangemaakt' => now(),
-                    'datum_gewijzigd' => now(),
                 ]);
             }
 
@@ -121,7 +119,7 @@ class CategoryController extends Controller
                 }
             }
         } else {
-            $categorie = DB::table('product_categorieen')->where('id', $id)->first();
+            $categorie = ProductCategorie::query()->where('id', $id)->first();
         }
 
         abort_if(! $categorie, 404);
@@ -144,9 +142,8 @@ class CategoryController extends Controller
             if (DB::connection()->getDriverName() === 'mysql') {
                 DB::select('CALL sp_category_update(?, ?)', [$id, $validated['naam']]);
             } else {
-                DB::table('product_categorieen')->where('id', $id)->update([
+                ProductCategorie::query()->where('id', $id)->update([
                     'naam' => $validated['naam'],
-                    'datum_gewijzigd' => now(),
                 ]);
             }
 
@@ -174,14 +171,14 @@ class CategoryController extends Controller
                 DB::select('CALL sp_category_delete(?)', [$id]);
             } else {
                 // SQLite/testing fallback: block if products exist
-                $count = (int) DB::table('producten')->where('categorie_id', $id)->count();
+                $count = (int) Product::query()->where('categorie_id', $id)->count();
                 if ($count > 0) {
                     return redirect()
                         ->route('voorraad.categorieen.index')
                         ->with('error', 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld');
                 }
 
-                DB::table('product_categorieen')->where('id', $id)->delete();
+                ProductCategorie::query()->where('id', $id)->delete();
             }
 
             return redirect()
@@ -206,25 +203,36 @@ class CategoryController extends Controller
     private function friendlyDbMessage(QueryException $e): string
     {
         $message = $e->getMessage();
+        $lowerMsg = strtolower($message);
 
         // MySQL stored procedure sp_category_delete blocks delete if products exist
         // and raises SQLSTATE 45000 with a custom message.
         if (
             $e->getCode() === '45000' ||
-            str_contains(strtolower($message), 'categorie kan niet worden verwijderd')
+            str_contains($lowerMsg, 'categorie kan niet worden verwijderd')
         ) {
             return 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld';
         }
 
-        if (str_contains(strtolower($message), 'categorie bestaat al')) {
+        if (
+            str_contains($lowerMsg, 'integrity constraint') ||
+            str_contains($lowerMsg, 'foreign key') ||
+            str_contains($lowerMsg, 'constraint fails')
+        ) {
+            return 'Categorie kan niet worden verwijderd omdat het gekoppeld is aan andere gegevens.';
+        }
+
+        if (str_contains($lowerMsg, 'categorie bestaat al')) {
             return 'Categorie bestaat al';
         }
 
-        if (str_contains(strtolower($message), 'unique') || str_contains(strtolower($message), 'duplicate')) {
+        if (str_contains($lowerMsg, 'unique') || str_contains($lowerMsg, 'duplicate')) {
             return 'Categorie bestaat al';
         }
 
-        return 'Er ging iets mis bij het opslaan.';
+        $info = $e->errorInfo;
+        $sqlState = is_array($info) ? ($info[0] ?? null) : null;
+        return 'Er ging iets mis bij het opslaan (SQL Code: ' . ($sqlState ?? $e->getCode()) . ').';
     }
 }
 
