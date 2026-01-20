@@ -13,10 +13,19 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Product toevoegen') }}
             </h2>
-            <a href="{{ route('voorraad.producten.index') }}"
-               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Terug
-            </a>
+            <div class="flex items-center gap-2">
+                @if(auth()->user()->role === 'Directie')
+                    <a href="{{ route('voorraad.categorieen.index') }}"
+                       class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        Categorieën
+                    </a>
+                @endif
+
+                <a href="{{ route('voorraad.producten.index') }}"
+                   class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Terug
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -115,6 +124,72 @@
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             {{-- Field-level validation error --}}
                             @error('aantal_voorraad')
+                                <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allergieën</label>
+
+                            @if(($allergenen ?? collect())->count() > 0)
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    @foreach($allergenen as $a)
+                                        @php
+                                            $selected = in_array((int) $a->id, array_map('intval', old('allergie_ids', [])), true);
+                                        @endphp
+                                        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <input type="checkbox"
+                                                   name="allergie_ids[]"
+                                                   value="{{ $a->id }}"
+                                                   {{ $selected ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                            <span>{{ $a->naam }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    Geen allergieën beschikbaar.
+                                </div>
+                            @endif
+
+                            @error('allergie_ids')
+                                <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                            @enderror
+                            @error('allergie_ids.*')
+                                <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product kenmerken (wensen)</label>
+
+                            @if(($wensen ?? collect())->count() > 0)
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    @foreach($wensen as $w)
+                                        @php
+                                            $selected = in_array((int) $w->id, array_map('intval', old('wens_ids', [])), true);
+                                        @endphp
+                                        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <input type="checkbox"
+                                                   name="wens_ids[]"
+                                                   value="{{ $w->id }}"
+                                                   {{ $selected ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                            <span>{{ $w->omschrijving }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    Geen kenmerken beschikbaar.
+                                </div>
+                            @endif
+
+                            @error('wens_ids')
+                                <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                            @enderror
+                            @error('wens_ids.*')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                             @enderror
                         </div>

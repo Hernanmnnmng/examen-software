@@ -28,6 +28,26 @@ class ProductCrudTest extends TestCase
         ]);
     }
 
+    private function seedAllergeen(string $naam = 'Gluten'): int
+    {
+        return (int) DB::table('allergenen')->insertGetId([
+            'naam' => $naam,
+            'is_actief' => 1,
+            'datum_aangemaakt' => now(),
+            'datum_gewijzigd' => now(),
+        ]);
+    }
+
+    private function seedWens(string $omschrijving = 'Halal'): int
+    {
+        return (int) DB::table('wensen')->insertGetId([
+            'omschrijving' => $omschrijving,
+            'is_actief' => 1,
+            'datum_aangemaakt' => now(),
+            'datum_gewijzigd' => now(),
+        ]);
+    }
+
     public function test_create_product_requires_unique_name_and_ean(): void
     {
         $user = $this->makeWorker();
@@ -53,6 +73,58 @@ class ProductCrudTest extends TestCase
                 'aantal_voorraad' => 1,
             ])
             ->assertSessionHas('error');
+    }
+
+    public function test_create_product_can_save_allergenen_links(): void
+    {
+        $user = $this->makeWorker();
+        $catId = $this->seedCategory();
+        $allergieId = $this->seedAllergeen('Pinda');
+
+        $this->actingAs($user)
+            ->post('/voorraad/producten', [
+                'product_naam' => 'Koekjes',
+                'categorie_id' => $catId,
+                'ean' => '9999999999999',
+                'aantal_voorraad' => 5,
+                'allergie_ids' => [$allergieId],
+            ])
+            ->assertRedirect('/voorraad')
+            ->assertSessionHas('success');
+
+        $productId = (int) DB::table('producten')->where('ean', '9999999999999')->value('id');
+        $this->assertTrue($productId > 0);
+
+        $this->assertDatabaseHas('product_allergenen', [
+            'product_id' => $productId,
+            'allergie_id' => $allergieId,
+        ]);
+    }
+
+    public function test_create_product_can_save_wensen_links(): void
+    {
+        $user = $this->makeWorker();
+        $catId = $this->seedCategory();
+        $wensId = $this->seedWens('Veganistisch');
+
+        $this->actingAs($user)
+            ->post('/voorraad/producten', [
+                'product_naam' => 'Soep',
+                'categorie_id' => $catId,
+                'ean' => '8888888888888',
+                'aantal_voorraad' => 2,
+                'wens_ids' => [$wensId],
+            ])
+            ->assertRedirect('/voorraad')
+            ->assertSessionHas('success');
+
+        $productId = (int) DB::table('producten')->where('ean', '8888888888888')->value('id');
+        $this->assertTrue($productId > 0);
+
+        $this->assertDatabaseHas('product_kenmerken', [
+            'product_id' => $productId,
+            'wens_id' => $wensId,
+        ]);
     }
 
     public function test_update_product_requires_unique_name_and_ean(): void

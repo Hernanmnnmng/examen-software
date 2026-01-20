@@ -54,9 +54,13 @@ class ProductController extends Controller
     public function create(): View
     {
         $categorieen = $this->getCategorieen();
+        $allergenen = $this->getAllergenen();
+        $wensen = $this->getWensen();
 
         return view('voorraad.producten.create', [
             'categorieen' => $categorieen,
+            'allergenen' => $allergenen,
+            'wensen' => $wensen,
         ]);
     }
 
@@ -70,6 +74,10 @@ class ProductController extends Controller
             'categorie_id' => ['required', 'integer', 'exists:product_categorieen,id'],
             'ean' => ['required', 'digits:13'],
             'aantal_voorraad' => ['required', 'integer', 'min:0'],
+            'allergie_ids' => ['nullable', 'array'],
+            'allergie_ids.*' => ['integer', 'exists:allergenen,id'],
+            'wens_ids' => ['nullable', 'array'],
+            'wens_ids.*' => ['integer', 'exists:wensen,id'],
         ]);
 
         try {
@@ -101,6 +109,10 @@ class ProductController extends Controller
         return view('voorraad.producten.edit', [
             'product' => $product,
             'categorieen' => $categorieen,
+            'allergenen' => $allergenen,
+            'selectedAllergieIds' => $selectedAllergieIds,
+            'wensen' => $wensen,
+            'selectedWensIds' => $selectedWensIds,
         ]);
     }
 
@@ -114,6 +126,10 @@ class ProductController extends Controller
             'categorie_id' => ['required', 'integer', 'exists:product_categorieen,id'],
             'ean' => ['required', 'digits:13'],
             'aantal_voorraad' => ['required', 'integer', 'min:0'],
+            'allergie_ids' => ['nullable', 'array'],
+            'allergie_ids.*' => ['integer', 'exists:allergenen,id'],
+            'wens_ids' => ['nullable', 'array'],
+            'wens_ids.*' => ['integer', 'exists:wensen,id'],
         ]);
 
         try {
@@ -173,6 +189,75 @@ class ProductController extends Controller
             ->active()
             ->orderBy('naam', 'asc')
             ->get(['id', 'naam']);
+    }
+
+    /**
+     * Allergenen for multi-select/checkboxes.
+     */
+    private function getAllergenen()
+    {
+        // Merge-friendly: not all environments will have this table yet.
+        if (! Schema::hasTable('allergenen')) {
+            return collect();
+        }
+
+        return DB::table('allergenen')
+            ->select(['id', 'naam'])
+            ->where('is_actief', '=', 1)
+            ->orderBy('naam', 'asc')
+            ->get();
+    }
+
+    /**
+     * Selected allergenen for a given product.
+     *
+     * @return array<int>
+     */
+    private function getSelectedAllergieIds(int $productId): array
+    {
+        if (! Schema::hasTable('product_allergenen')) {
+            return [];
+        }
+
+        return DB::table('product_allergenen')
+            ->where('product_id', '=', $productId)
+            ->pluck('allergie_id')
+            ->map(static fn ($v) => (int) $v)
+            ->all();
+    }
+
+    /**
+     * Wensen/kenmerken for multi-select/checkboxes.
+     */
+    private function getWensen()
+    {
+        if (! Schema::hasTable('wensen')) {
+            return collect();
+        }
+
+        return DB::table('wensen')
+            ->select(['id', 'omschrijving'])
+            ->where('is_actief', '=', 1)
+            ->orderBy('omschrijving', 'asc')
+            ->get();
+    }
+
+    /**
+     * Selected wensen/kenmerken for a given product.
+     *
+     * @return array<int>
+     */
+    private function getSelectedWensIds(int $productId): array
+    {
+        if (! Schema::hasTable('product_kenmerken')) {
+            return [];
+        }
+
+        return DB::table('product_kenmerken')
+            ->where('product_id', '=', $productId)
+            ->pluck('wens_id')
+            ->map(static fn ($v) => (int) $v)
+            ->all();
     }
 
     /**
