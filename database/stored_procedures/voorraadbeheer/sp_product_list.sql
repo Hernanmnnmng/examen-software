@@ -43,7 +43,8 @@ BEGIN
 
     SET v_sql = CONCAT(v_sql, ' ORDER BY ', v_sort_col, ' ', v_dir);
 
-    PREPARE stmt FROM v_sql;
+    SET @sql = v_sql;
+    PREPARE stmt FROM @sql;
     IF p_ean IS NOT NULL AND p_ean <> '' THEN
         SET @ean := p_ean;
         EXECUTE stmt USING @ean;

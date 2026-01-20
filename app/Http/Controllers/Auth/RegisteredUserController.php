@@ -36,11 +36,16 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'string', 'in:user,worker'],
         ]);
 
+        $roleMap = [
+            'user' => 'Vrijwilliger',
+            'worker' => 'Magazijnmedewerker',
+        ];
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'user',
+            'role' => $roleMap[$request->role] ?? 'Vrijwilliger',
         ]);
 
         event(new Registered($user));
@@ -49,9 +54,9 @@ class RegisteredUserController extends Controller
 
         // Redirect based on user role
         return match($user->role) {
-            'admin' => redirect(route('dashboard.admin', absolute: false)),
-            'worker' => redirect(route('dashboard.worker', absolute: false)),
-            'user' => redirect(route('dashboard.user', absolute: false)),
+            'Directie' => redirect(route('dashboard.admin', absolute: false)),
+            'Magazijnmedewerker' => redirect(route('dashboard.worker', absolute: false)),
+            'Vrijwilliger' => redirect(route('dashboard.user', absolute: false)),
             default => redirect(route('dashboard.user', absolute: false)),
         };
     }

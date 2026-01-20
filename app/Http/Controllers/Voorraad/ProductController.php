@@ -9,17 +9,11 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use Throwable;
 
 /**
  * Voorraadbeheer: Product CRUD + listing.
- *
- * Notes (Hernan Martino Molina):
- * - On MySQL we prefer stored procedures (exam requirement).
- * - On SQLite/testing we fall back to Query Builder so the app/tests remain runnable.
- * - Errors are flashed to the session as 'success'/'error' and shown by the Blade views.
  */
 class ProductController extends Controller
 {
@@ -37,62 +31,11 @@ class ProductController extends Controller
             $sort = 'product_naam';
         }
 
-        $producten = [];
-
         try {
-            // Prefer stored procedures on MySQL (exam requirement),
-            // but fall back to a normal SELECT if the procedure is missing.
-            if (DB::connection()->getDriverName() === 'mysql') {
-                try {
-                    $producten = DB::select('CALL sp_product_list(?, ?, ?)', [
-                        $ean !== '' ? $ean : null,
-                        $sort,
-                        $dir,
-                    ]);
-                } catch (QueryException $e) {
-                    // MySQL error 1305: PROCEDURE ... does not exist
-                    $errorInfo = $e->errorInfo;
-                    $mysqlCode = is_array($errorInfo) ? ($errorInfo[1] ?? null) : null;
-                    if ((int) $mysqlCode !== 1305) {
-                        throw $e;
-                    }
-                }
-            }
-
-            if (empty($producten)) {
-                // SQLite/testing fallback OR MySQL fallback when SP is missing.
-                // Use Eloquent model as the query base (exam requirement: model usage),
-                // while keeping the exact same shape expected by the Blade views.
-                $query = Product::query()
-                    ->from('producten as p')
-                    ->join('product_categorieen as c', 'c.id', '=', 'p.categorie_id')
-                    ->select([
-                        'p.id',
-                        'p.product_naam',
-                        'p.ean',
-                        'p.aantal_voorraad',
-                        'p.categorie_id',
-                        DB::raw('c.naam as categorie_naam'),
-                    ])
-                    ->where('p.is_actief', '=', 1)
-                    ->where('c.is_actief', '=', 1);
-
-                if ($ean !== '') {
-                    $query->where('p.ean', '=', $ean);
-                }
-
-                $sortColumn = match ($sort) {
-                    'ean' => 'p.ean',
-                    'categorie' => 'c.naam',
-                    'aantal_voorraad' => 'p.aantal_voorraad',
-                    default => 'p.product_naam',
-                };
-
-                $producten = $query->orderBy($sortColumn, $dir)->get();
-            }
+            // Logic moved to Model
+            $producten = Product::listProducts($ean, $sort, $dir);
         } catch (Throwable $e) {
             report($e);
-            // Keep page usable; show empty list and a flash error.
             session()->flash('error', 'Kon producten niet laden.');
             $producten = [];
         }
@@ -130,29 +73,12 @@ class ProductController extends Controller
         ]);
 
         try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_product_create(?, ?, ?, ?)', [
-                    $validated['product_naam'],
-                    $validated['ean'],
-                    (int) $validated['categorie_id'],
-                    (int) $validated['aantal_voorraad'],
-                ]);
-            } else {
-                // SQLite/testing fallback (Eloquent model)
-                Product::query()->create([
-                    'product_naam' => $validated['product_naam'],
-                    'ean' => $validated['ean'],
-                    'categorie_id' => (int) $validated['categorie_id'],
-                    'aantal_voorraad' => (int) $validated['aantal_voorraad'],
-                    'is_actief' => 1,
-                ]);
-            }
+            Product::createProduct($validated);
 
             return redirect()
                 ->route('voorraad.producten.index')
                 ->with('success', 'Product aangemaakt');
         } catch (QueryException $e) {
-            report($e);
             return back()
                 ->withInput()
                 ->with('error', $this->friendlyDbMessage($e));
@@ -168,14 +94,7 @@ class ProductController extends Controller
     public function edit(int $id): View
     {
         $categorieen = $this->getCategorieen();
-        $product = null;
-
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $rows = DB::select('CALL sp_product_get(?)', [$id]);
-            $product = $rows[0] ?? null;
-        } else {
-            $product = Product::query()->where('id', $id)->first();
-        }
+        $product = Product::getProduct($id);
 
         abort_if(! $product, 404);
 
@@ -198,29 +117,12 @@ class ProductController extends Controller
         ]);
 
         try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_product_update(?, ?, ?, ?, ?)', [
-                    $id,
-                    $validated['product_naam'],
-                    $validated['ean'],
-                    (int) $validated['categorie_id'],
-                    (int) $validated['aantal_voorraad'],
-                ]);
-            } else {
-                // SQLite/testing fallback (Eloquent model)
-                Product::query()->where('id', $id)->update([
-                    'product_naam' => $validated['product_naam'],
-                    'ean' => $validated['ean'],
-                    'categorie_id' => (int) $validated['categorie_id'],
-                    'aantal_voorraad' => (int) $validated['aantal_voorraad'],
-                ]);
-            }
+            Product::updateProduct($id, $validated);
 
             return redirect()
                 ->route('voorraad.producten.index')
                 ->with('success', 'Wijzigingen opgeslagen');
         } catch (QueryException $e) {
-            report($e);
             return back()
                 ->withInput()
                 ->with('error', $this->friendlyDbMessage($e));
@@ -236,38 +138,21 @@ class ProductController extends Controller
     public function destroy(int $id): RedirectResponse
     {
         try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_product_delete(?)', [$id]);
-            } else {
-                // SQLite/testing fallback: if the linkage table exists, enforce the same rule.
-                if (Schema::hasTable('voedselpakket_producten')) {
-                    $usedCount = (int) DB::table('voedselpakket_producten')
-                        ->where('product_id', $id)
-                        ->count();
-
-                    if ($usedCount > 0) {
-                        return redirect()
-                            ->route('voorraad.producten.index')
-                            ->with('error', 'Product kan niet worden verwijderd, het is al gebruikt in een voedselpakket');
-                    }
-                }
-
-                Product::query()->where('id', $id)->delete();
-            }
+            Product::deleteProduct($id);
 
             return redirect()
                 ->route('voorraad.producten.index')
                 ->with('success', 'Product verwijderd');
         } catch (QueryException $e) {
-            report($e);
             return redirect()
                 ->route('voorraad.producten.index')
                 ->with('error', $this->friendlyDbMessage($e));
         } catch (Throwable $e) {
+            // Catch custom exception from Eloquent fallback or general errors
             report($e);
             return redirect()
                 ->route('voorraad.producten.index')
-                ->with('error', 'Product verwijderen mislukt');
+                ->with('error', $e->getMessage() ?: 'Product verwijderen mislukt');
         }
     }
 
@@ -280,12 +165,7 @@ class ProductController extends Controller
             try {
                 return DB::select('CALL sp_category_list()');
             } catch (QueryException $e) {
-                $errorInfo = $e->errorInfo;
-                $mysqlCode = is_array($errorInfo) ? ($errorInfo[1] ?? null) : null;
-                // 1305: procedure does not exist → fall back
-                if ((int) $mysqlCode !== 1305) {
-                    throw $e;
-                }
+                if ((int) ($e->errorInfo[1] ?? 0) !== 1305) throw $e;
             }
         }
 
@@ -297,28 +177,38 @@ class ProductController extends Controller
 
     /**
      * Convert low-level DB exceptions to a user-facing message.
-     *
-     * (Hernan Martino Molina) We keep the controller DB-focused; views can further
-     * "prettify" overly-technical messages if needed.
      */
     private function friendlyDbMessage(QueryException $e): string
     {
-        // Prefer MySQL SIGNAL messages (SQLSTATE 45000) when provided.
         $info = $e->errorInfo;
         $sqlState = is_array($info) ? ($info[0] ?? null) : null;
         $message = $e->getMessage();
+        $lowerMsg = strtolower($message);
 
+        // 1. User-defined signal (45000)
         if ($sqlState === '45000') {
-            // MySQL embeds SIGNAL message at the end; still good enough for UX.
             return $message;
         }
 
-        // Handle common unique constraint cases (SQLite and MySQL).
-        if (str_contains(strtolower($message), 'unique') || str_contains(strtolower($message), 'duplicate')) {
-            return 'Productnaam of EAN-code al bestaat';
+        // 2. Duplicate entry
+        if (str_contains($lowerMsg, 'unique') || str_contains($lowerMsg, 'duplicate')) {
+            return 'Productnaam of EAN-code bestaat al.';
         }
 
-        return 'Er ging iets mis bij het opslaan.';
+        // 3. Foreign key / usage constraint
+        if (str_contains($lowerMsg, 'integrity constraint') ||
+            str_contains($lowerMsg, 'foreign key') ||
+            str_contains($lowerMsg, 'constraint fails')) {
+            return 'Product kan niet worden verwijderd omdat het gekoppeld is aan andere gegevens.';
+        }
+
+        // 4. Specific text check (for manual exceptions or Dutch signals if state wasn't 45000)
+        if (str_contains($lowerMsg, 'verwijderd')) {
+             return 'Product kan niet worden verwijderd, het is al gebruikt.';
+        }
+
+        // 5. Fallback with code for debugging
+        return 'Er ging iets mis bij het opslaan (SQL Code: ' . ($sqlState ?? 'Unknown') . ').';
     }
 }
 

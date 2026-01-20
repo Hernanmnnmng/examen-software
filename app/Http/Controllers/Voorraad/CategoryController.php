@@ -203,25 +203,36 @@ class CategoryController extends Controller
     private function friendlyDbMessage(QueryException $e): string
     {
         $message = $e->getMessage();
+        $lowerMsg = strtolower($message);
 
         // MySQL stored procedure sp_category_delete blocks delete if products exist
         // and raises SQLSTATE 45000 with a custom message.
         if (
             $e->getCode() === '45000' ||
-            str_contains(strtolower($message), 'categorie kan niet worden verwijderd')
+            str_contains($lowerMsg, 'categorie kan niet worden verwijderd')
         ) {
             return 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld';
         }
 
-        if (str_contains(strtolower($message), 'categorie bestaat al')) {
+        if (
+            str_contains($lowerMsg, 'integrity constraint') ||
+            str_contains($lowerMsg, 'foreign key') ||
+            str_contains($lowerMsg, 'constraint fails')
+        ) {
+            return 'Categorie kan niet worden verwijderd omdat het gekoppeld is aan andere gegevens.';
+        }
+
+        if (str_contains($lowerMsg, 'categorie bestaat al')) {
             return 'Categorie bestaat al';
         }
 
-        if (str_contains(strtolower($message), 'unique') || str_contains(strtolower($message), 'duplicate')) {
+        if (str_contains($lowerMsg, 'unique') || str_contains($lowerMsg, 'duplicate')) {
             return 'Categorie bestaat al';
         }
 
-        return 'Er ging iets mis bij het opslaan.';
+        $info = $e->errorInfo;
+        $sqlState = is_array($info) ? ($info[0] ?? null) : null;
+        return 'Er ging iets mis bij het opslaan (SQL Code: ' . ($sqlState ?? $e->getCode()) . ').';
     }
 }
 
