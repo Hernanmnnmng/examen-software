@@ -66,4 +66,24 @@ class leveranciersModel extends Model
      {
           return DB::update('UPDATE leveranciers SET is_actief = 0 WHERE id = ?', [$id]);
      }
+
+     static public function SP_CheckIfBedrijfIsAciefById($id): bool
+     {
+          $result = DB::select('CALL SP_CheckIfBedrijfIsActiefById(?)', [$id]);
+
+          if (empty($result)) {
+               return false;
+          }
+
+          return (bool) $result[0]->is_actief;
+     }
+
+     static public function SP_CreateLevering($data)
+     {
+        return DB::statement('CALL SP_CreateLevering(?, ?, ?)', [
+            $data['leverancier_id'],
+            $data['leverdatum_tijd'],
+            $data['eerstvolgende_levering']
+        ]);
+     }
 }

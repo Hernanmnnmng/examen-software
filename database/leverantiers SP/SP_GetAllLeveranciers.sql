@@ -4,7 +4,7 @@ DELIMITER ??
 CREATE PROCEDURE SP_GetAllLeveranciers()
 BEGIN
     SELECT 
-        lvrn.id
+        lvrn.id,
         lvrn.bedrijfsnaam,
         adrs.straat,
         adrs.huisnummer,

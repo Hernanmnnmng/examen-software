@@ -61,6 +61,31 @@ class leveranciersController extends Controller
         }
     }
 
+    public function storeLevering(Request $request)
+    {
+        $data = $request->validate([
+            'leverancier_id'         => 'required|integer',
+            'leverdatum_tijd'        => 'required',
+            'eerstvolgende_levering' => 'required'
+        ]);
+
+        $id = $data['leverancier_id'];
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
+        
+        if($checkIsActief) {
+            $result = Leverancier::SP_CreateLevering($data);
+        } else {
+            return redirect()->back()->with('error', 'de geselecteerde bedrijf is niet meer actief');
+        }
+
+        if($result) {
+            return redirect()->back()->with('success', 'Levering succesvol toegevoegd');
+        } else {
+            return redirect()->back()->with('error', 'Levering niet succesvol toegevoegd');
+        }
+    }
+
+
     public function softDeleteLeverancier(string $id)
     {
         $affected = Leverancier::SoftDeleteLeverancierById((int) $id);
@@ -71,15 +96,6 @@ class leveranciersController extends Controller
 
         return redirect()->back()->with('error', 'leverancier niet gevonden of al verwijderd');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
     /**
      * Display the specified resource.
      */

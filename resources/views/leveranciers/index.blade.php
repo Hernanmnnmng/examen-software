@@ -182,29 +182,39 @@
 
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Nieuwe Leverancier</h2>
 
-                    <form method="POST" action="" class="grid grid-cols-2 gap-4" id="newLevering">
+                    <form method="POST" action="{{ route('leveranciers.storeLevering') }}" class="grid grid-cols-2 gap-4" id="newLevering">
+                        @csrf
                         <!-- Voorbeeld inputs -->
                         <div class="col-span-2">
-                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Bedrijfsnaam</label>
-                            <input type="text" name="bedrijfsnaam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Bedrijf</label>
+                            <select name="leverancier_id" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                @forelse ($leveranciers as $leverancier)
+                                    <option value="{{ $leverancier->id }}">{{ $leverancier->bedrijfsnaam }}</option>
+                                @empty
+                                    <option value="0">Geen bedrijven geregistreerd</option>
+                                @endforelse
+                            </select>
                         </div>
-                        <div>
-                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Contactpersoon</label>
-                            <input type="text" name="contact_naam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                            <input type="email" name="email" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        </div>
+
                         <div class="col-span-2">
-                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Telefoon</label>
-                            <input type="text" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Leverdatum & tijd</label>
+                            <input type="datetime-local" name="leverdatum_tijd"
+                                class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Leverdatum & tijd</label>
+                            <input type="datetime-local" name="eerstvolgende_levering"
+                                class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        </div>
+
+
                         <div class="col-span-2 flex justify-end gap-2 mt-4">
                             <button type="submit" form="newLevering" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-semibold">Opslaan</button>
                             <button type="button" onclick="showNewLeveringForm()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm font-semibold">Annuleren</button>
                         </div>
                     </form>
+
                 </div>
             </div>
             <!-- Leveringsoverzicht -->
