@@ -47,7 +47,7 @@ class User extends Authenticatable
         ];
     }
 
-/**
+    /**
      * Check of de gebruiker Directie is
      * (Vervangt isAdmin)
      */
