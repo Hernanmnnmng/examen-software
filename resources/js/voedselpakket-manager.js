@@ -81,6 +81,8 @@ export class VoedselpakketManager {
                 $input.val(stock);
                 this.showToast(`Er zijn maar ${stock} stuks op voorraad.`, 'error');
             }
+
+            this.updateProductDropdownsAndValidate();
         });
 
         // Initial State Check
