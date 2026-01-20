@@ -27,9 +27,6 @@
                     <div class="p-6">
                         <div class="mb-4">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
                                 Pakket Overzicht
                             </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Alle samengestelde voedselpakketten</p>
@@ -80,8 +77,7 @@
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                             </svg>
                                                         </a>
-                                                    @endif
-                                                    @if(!$package->datum_uitgifte)
+
                                                         <form method="POST" action="{{ route('voedselpakketten.deliver', $package->id) }}" onsubmit="return confirm('Weet u zeker dat u dit pakket wilt uitreiken?');" class="inline">
                                                             @csrf
                                                             <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300" title="Markeer als uitgereikt">
@@ -99,6 +95,8 @@
                                                                 </svg>
                                                             </button>
                                                         </form>
+                                                    @else
+                                                        <span class="text-gray-400 text-xs italic">Geen acties (Uitgereikt)</span>
                                                     @endif
                                                 </div>
                                             </td>
@@ -131,17 +129,21 @@
                                     <div class="flex gap-2">
                                         @if(!$package->datum_uitgifte)
                                             <a href="{{ route('voedselpakketten.edit', $package->id) }}" class="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 text-center">Bewerken</a>
-                                        @endif
-                                        @if(!$package->datum_uitgifte)
+
                                             <form method="POST" action="{{ route('voedselpakketten.deliver', $package->id) }}" onsubmit="return confirm('Weet u zeker dat u dit pakket wilt uitreiken?');" class="flex-1">
                                                 @csrf
                                                 <button type="submit" class="w-full px-3 py-2 text-sm bg-green-50 text-green-700 rounded hover:bg-green-100 dark:bg-green-900 dark:text-green-200 text-center">Afgeven</button>
                                             </form>
+
                                             <form method="POST" action="{{ route('voedselpakketten.destroy', $package->id) }}" onsubmit="return confirm('Weet u zeker dat u dit pakket wilt verwijderen?');" class="flex-1">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="w-full px-3 py-2 text-sm bg-red-50 text-red-700 rounded hover:bg-red-100 dark:bg-red-900 dark:text-red-200 text-center">Verwijder</button>
                                             </form>
+                                        @else
+                                             <div class="w-full text-center text-gray-500 text-sm italic py-2 bg-gray-50 rounded dark:bg-gray-700 dark:text-gray-400">
+                                                Geen acties mogelijk (Reeds uitgereikt op {{ \Carbon\Carbon::parse($package->datum_uitgifte)->format('d-m-Y') }})
+                                             </div>
                                         @endif
                                     </div>
                                 </div>

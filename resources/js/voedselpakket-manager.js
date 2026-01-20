@@ -1,356 +1,402 @@
 
+/**
+ * VoedselpakketManager
+ *
+ * Deze klasse beheert de frontend logica voor het aanmaken en bewerken van voedselpakketten.
+ * Functionaliteiten:
+ * - Dynamisch toevoegen/verwijderen van productrijen.
+ * - Ophalen van toegestane producten per specifiek gezin (klant).
+ * - Real-time validatie van voorraad (maximaal aantal).
+ * - Voorkomen van dubbele productselectie in meerdere rijen.
+ * - 'Dirty checking': Opslaan knop alleen activeren als er daadwerkelijk wijzigingen zijn.
+ */
 export class VoedselpakketManager {
+
+    /**
+     * Constructor voor de manager.
+     * Initialiseert configuratie, state en DOM elementen.
+     *
+     * @param {Object} config - Object met ID's en selectors voor HTML elementen.
+     */
     constructor(config) {
-        this.containerId = config.containerId;
-        this.addBtnId = config.addBtnId;
-        this.klantSelectId = config.klantSelectId;
-        this.submitBtnSelector = config.submitBtnSelector; // e.g. 'button[type="submit"]'
-        this.toastContainerId = config.toastContainerId || 'toast-container';
-        this.productsEndpoint = config.productsEndpoint || '/voedselpakketten/producten/';
+        // Configuratie opslaan
+        this.config = config;
 
-        this.productsData = [];
-        this.rowCount = 0;
-        this.initialState = '[]'; // JSON string of sorted products
+        // Cache voor jQuery elementen (prestatie optimalisatie)
+        this.elements = {
+            container: $(`#${config.containerId}`),         // De div waar rijen in komen
+            addBtn: $(`#${config.addBtnId}`),               // Knop 'Product toevoegen'
+            klantSelect: $(`#${config.klantSelectId}`),     // Dropdown voor gezinnen
+            submitBtn: $(config.submitBtnSelector),         // Opslaan knop
+            toastContainer: $(`#${config.toastContainerId || 'toast-container'}`) // Container voor meldingen
+        };
 
-        // Bind methods
-        this.handleKlantChange = this.handleKlantChange.bind(this);
-        this.addProductRow = this.addProductRow.bind(this);
-        this.updateProductDropdownsAndValidate = this.updateProductDropdownsAndValidate.bind(this);
-        this.showToast = this.showToast.bind(this);
-        this.captureInitialState = this.captureInitialState.bind(this);
-        this.getSnapshot = this.getSnapshot.bind(this);
+        // Interne state van de applicatie
+        this.state = {
+            products: [],      // Lijst met beschikbare producten voor het geselecteerde gezin
+            rowCount: 0,       // Teller voor unieke ID's van inputvelden
+            initialData: '[]'  // Snapshot van de data bij laden (voor wijzigingscontrole)
+        };
 
+        // Start de applicatie
         this.init();
     }
 
+    /**
+     * Initialiseert alle event listeners en start-logica.
+     */
     init() {
-        // Event Listeners
-        const $container = $(`#${this.containerId}`);
-        const $klantSelect = $(`#${this.klantSelectId}`);
-        const $addBtn = $(`#${this.addBtnId}`);
+        // 1. Event: Klik op 'Product toevoegen'
+        this.elements.addBtn.on('click', () => this.addProductRow());
 
-        // Add Button
-        $addBtn.on('click', this.addProductRow);
+        // 2. Event: Verandering van Gezin/Klant selectie
+        this.elements.klantSelect.on('change', (e) => this.fetchProductsForClient($(e.target).val()));
 
-        // Klant Change
-        $klantSelect.on('change', (e) => this.handleKlantChange($(e.target).val()));
+        // 3. Event: Validatie en logica bij wijzigen van een product-dropdown
+        // We gebruiken 'event delegation' (on change op container) omdat rijen dynamisch zijn
+        this.elements.container.on('change', 'select.product-select', (e) => {
+             this.handleProductSelection($(e.target)); // Update max voorraad
+             this.validateForm(); // Controleer formulier
+        });
 
-        // Remove Row (Event Delegation)
-        $container.on('click', '.remove-row-btn', (e) => {
+        // 4. Event: Validatie bij typen/veranderen van aantal
+        this.elements.container.on('input change blur', 'input.quantity-input', (e) => {
+            this.handleQuantityChange(e, $(e.target));
+            this.validateForm();
+        });
+
+        // 5. Event: Klik op 'Verwijder' knop bij een rij
+        this.elements.container.on('click', '.remove-row-btn', (e) => {
             $(e.target).closest('.product-row').remove();
-            this.updateProductDropdownsAndValidate();
+            this.validateForm();
         });
 
-        // Product Select Change
-        $container.on('change', 'select[name^="producten"]', (e) => {
-            this.updateProductDropdownsAndValidate();
-
-            // Validate stock max immediately upon selection
-            const $select = $(e.target);
-            const stock = $select.find(':selected').data('stock');
-            const $input = $select.siblings('input[type="number"]');
-
-            if (stock !== undefined) {
-                $input.attr('max', stock);
-                let val = parseInt($input.val());
-                if(val > stock) {
-                    $input.val(stock);
-                    this.showToast(`Aantal aangepast aan maximale voorraad (${stock}).`, 'error');
-                }
-            }
-        });
-
-        // Quantity Input Change
-        $container.on('input change blur', 'input[name^="producten"][type="number"]', (e) => {
-            const $input = $(e.target);
-            const $select = $input.siblings('select');
-            const stock = $select.find(':selected').data('stock');
-            let val = parseInt($input.val());
-
-            if (e.type === 'blur' && (!val || isNaN(val))) {
-                $input.val(1);
-                val = 1;
-            }
-
-            if (!isNaN(val) && val < 1) {
-                $input.val(1);
-                val = 1;
-            }
-
-            if (stock !== undefined && val > stock) {
-                $input.val(stock);
-                this.showToast(`Er zijn maar ${stock} stuks op voorraad.`, 'error');
-            }
-
-            this.updateProductDropdownsAndValidate();
-        });
-
-        // Initial State Check
-        const initialKlantId = $klantSelect.val();
-        if(initialKlantId) {
-            this.handleKlantChange(initialKlantId, true); // true = preserve existing rows if needed
+        // Check bij het laden van de pagina of er al een klant geselecteerd is (bijv. bij Edit of validatie-fout return)
+        const initialClient = this.elements.klantSelect.val();
+        if(initialClient) {
+            // Laad producten, true = 'isInitialLoad' (behoud bestaande rijen)
+            this.fetchProductsForClient(initialClient, true);
         } else {
-            this.lockInterface();
+            // Blokkeer interface totdat er een klant is
+            this.toggleInterface(false);
         }
     }
 
-    lockInterface() {
-        $(`#${this.containerId} input, #${this.containerId} select, #${this.containerId} button`).prop('disabled', true);
-        $(`#${this.addBtnId}`).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
-        $(this.submitBtnSelector).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+    /**
+     * Schakelt de knoppen en inputs in of uit.
+     * Wordt gebruikt om te voorkomen dat gebruikers producten toevoegen zonder klant.
+     *
+     * @param {boolean} enabled - True om te activeren, False om te blokkeren.
+     */
+    toggleInterface(enabled) {
+        const { container, addBtn, submitBtn } = this.elements;
+        const disabledClass = 'opacity-50 cursor-not-allowed';
+
+        if(enabled) {
+            // Activeer alles
+            container.find('input, select, button.remove-row-btn').prop('disabled', false);
+            addBtn.prop('disabled', false).removeClass(disabledClass);
+            // Submit knop wordt apart beheerd door validateForm()
+        } else {
+            // Deactiveer alles
+            container.find('input, select, button.remove-row-btn').prop('disabled', true);
+            addBtn.prop('disabled', true).addClass(disabledClass);
+            submitBtn.prop('disabled', true).addClass(disabledClass);
+        }
     }
 
-    unlockInterface() {
-        $(`#${this.containerId} input, #${this.containerId} select, #${this.containerId} button`).prop('disabled', false);
-        $(`#${this.addBtnId}`).prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
-        // Submit button is handled by validation
-    }
-
-    handleKlantChange(klantId, isInitialLoad = false) {
-        if (!klantId) {
-            this.productsData = [];
-            $(`#${this.containerId}`).empty(); // Clear rows safely? Or keep? Usually clear on client change.
-            if(!isInitialLoad) this.rowCount = 0;
-            this.lockInterface();
+    /**
+     * Haalt de producten op die toegestaan zijn voor een specifiek gezin.
+     *
+     * @param {number} clanId - ID van het gezin/klant.
+     * @param {boolean} isInitialLoad - Als true, wissen we de bestaande rijen NIET (voor edit pagina).
+     */
+    fetchProductsForClient(clientId, isInitialLoad = false) {
+        // Als geen klant geselecteerd is (leeg), reset alles
+        if (!clientId) {
+            this.state.products = [];
+            this.elements.container.empty();
+            this.toggleInterface(false);
             return Promise.resolve();
         }
 
-        return axios.get(`${this.productsEndpoint}${klantId}`)
-            .then(response => {
-                this.productsData = response.data;
-                this.unlockInterface();
-                this.updateProductDropdownsAndValidate();
+        const endpoint = this.config.productsEndpoint || '/voedselpakketten/producten/';
+
+        // AJAX request naar backend
+        return axios.get(`${endpoint}${clientId}`)
+            .then(res => {
+                this.state.products = res.data; // Sla producten op in state
+                this.toggleInterface(true);     // Activeer interface
+                this.validateForm();            // Her-valideer (update dropdown opties)
             })
-            .catch(error => {
-                console.error(error);
-                this.showToast('Kon producten niet ophalen.', 'error');
-                this.productsData = [];
-                this.updateProductDropdownsAndValidate();
+            .catch(err => {
+                console.error("Fout bij ophalen producten:", err);
+                this.showToast('Kan producten niet ophalen. Controleer uw verbinding.', 'error');
+                this.state.products = [];
+                this.validateForm();
             });
     }
 
-    addProductRow(e, existingData = null) {
-        if (!$(`#${this.klantSelectId}`).val() && !existingData) {
+    /**
+     * Voegt een nieuwe product-rij toe aan de HTML.
+     *
+     * @param {Object|null} data - (Optioneel) Data om in te vullen: {product_id, aantal, name, stock}.
+     */
+    addProductRow(data = null) {
+        // Stop als er geen klant is geselecteerd (beveiliging)
+        if (!this.elements.klantSelect.val() && !data) {
             this.showToast('Selecteer eerst een klant.', 'error');
             return;
         }
 
-        this.rowCount++;
-        // Use a generic index, or stick to rowCount.
-        // Note: For Update, we might want to use array indices or just incremental.
-        // Laravel handles `producten` array fine.
+        this.state.rowCount++;
+        const index = this.state.rowCount; // Unieke index voor name="" attributen
 
-        const productId = existingData ? existingData.product_id : '';
-        const aantal = existingData ? existingData.aantal : 1;
+        // Bepaal startwaardes (leeg of vanuit data)
+        const currentQty = data ? data.aantal : 1;
 
-        const html = `
-            <div class="flex gap-3 product-row mb-3">
-                <select name="producten[${this.rowCount}][product_id]" class="product-select flex-1 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="">-- Selecteer product --</option>
-                </select>
-                <input type="number" name="producten[${this.rowCount}][aantal]" min="1" value="${aantal}" placeholder="Aantal" class="quantity-input w-20 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <button type="button" class="remove-row-btn px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-200">Verwijder</button>
+        // De HTML template voor één rij
+        // Gebruikt Tailwind classes voor styling
+        const rowHtml = `
+            <div class="flex gap-3 product-row mb-3 items-start">
+                <div class="flex-1">
+                    <select name="producten[${index}][product_id]" class="product-select w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2">
+                        <option value="">-- Selecteer product --</option>
+                    </select>
+                </div>
+                <div>
+                    <input type="number" name="producten[${index}][aantal]"
+                           min="1" value="${currentQty}" placeholder="Aantal"
+                           class="quantity-input w-24 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2">
+                </div>
+                <div>
+                    <button type="button" class="remove-row-btn px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-200 transition-colors">
+                        <span class="font-bold">&times;</span>
+                    </button>
+                </div>
             </div>
         `;
 
-        const $container = $(`#${this.containerId}`);
-        $container.append(html);
+        // Voeg de rij toe aan de container
+        this.elements.container.append(rowHtml);
 
-        const $newSelect = $container.children().last().find('select');
+        // Vul de dropdown van DEZE nieuwe rij
+        const $newSelect = this.elements.container.children().last().find('select');
+        this.renderSelectOptions($newSelect, data ? data.product_id : null, data);
 
-        // Populate options based on current productsData
-        this.populateSelect($newSelect, productId, existingData);
-
-        this.updateProductDropdownsAndValidate();
+        // Trigger validatie om de rest van de pagina bij te werken
+        this.validateForm();
     }
 
-    populateSelect($select, selectedValue, extraMeta = null) {
-        // Clear except first
+    /**
+     * Vult een <select> met opties uit this.state.products.
+     *
+     * @param {jQuery} $select - Het select element.
+     * @param {number} selectedValue - De ID die geselecteerd moet zijn (indien aanwezig).
+     * @param {Object} extraMeta - Metadata (naam, voorraad) voor als het product niet in de standaard lijst staat (bijv. oude data).
+     */
+    renderSelectOptions($select, selectedValue, extraMeta) {
+        // Verwijder alle opties behalve de eerste ('Selecteer product')
         $select.find('option:not(:first)').remove();
 
-        let found = false;
+        let foundInList = false;
 
-        this.productsData.forEach(prod => {
+        // Loop door alle beschikbare producten
+        this.state.products.forEach(prod => {
             const stock = prod.aantal_voorraad || prod.voorraad;
-            // For edit mode: if this product is the one selected, we might need to add its OLD stock to the current available stock
-            // to represent the "true" max if we were to unselect it.
-            // logic is tricky. For now use available stock.
+            const option = $('<option></option>')
+                .attr('value', prod.id)
+                .text(`${prod.product_naam || prod.naam} (${stock} beschikbaar)`)
+                .data('stock', stock); // Sla voorraad op in data-attribuut
 
-             const option = $('<option></option>')
-                    .attr('value', prod.id)
-                    .text(`${prod.product_naam || prod.naam} (${stock} beschikbaar)`)
-                    .data('stock', stock);
-
+            // Als dit product overeenkomt met de waarde die we willen selecteren
             if(selectedValue && parseInt(selectedValue) === prod.id) {
                 option.prop('selected', true);
-                found = true;
+                foundInList = true;
             }
 
             $select.append(option);
         });
 
-        // Handle case where cached/existing product is NOT in the active list
-        if (selectedValue && !found && extraMeta && extraMeta.name) {
+        // Fallback: Als het product ID wel bestaat maar niet in de lijst (bijv. uitverkocht of verwijderd sinds opslaan)
+        // Voeg het handmatig toe zodat de gebruiker ziet wat er geselecteerd was.
+        if (selectedValue && !foundInList && extraMeta) {
              const option = $('<option></option>')
                     .attr('value', selectedValue)
-                    .text(`${extraMeta.name} (Niet meer beschikbaar?)`)
+                    .text(`${extraMeta.name || 'Onbekend'} (Niet meer beschikbaar?)`)
                     .data('stock', extraMeta.stock || 0)
                     .prop('selected', true);
             $select.append(option);
         }
     }
 
-    updateProductDropdownsAndValidate() {
-        let invalidCount = 0;
-        let validProductCount = 0;
-        const $container = $(`#${this.containerId}`);
-        const selects = $container.find('select[name^="producten"][name$="[product_id]"]');
+    /**
+     * Logica die uitgevoerd wordt als een gebruiker een product kiest.
+     * Update voornamelijk het 'max' attribuut van het aantal-veld.
+     */
+    handleProductSelection($select) {
+        const stock = $select.find(':selected').data('stock');
+        const $input = $select.closest('.product-row').find('input.quantity-input');
 
+        if (stock !== undefined) {
+            $input.attr('max', stock);
+
+            // Als huidige invoer hoger is dan voorraad, direct corrigeren
+            if(parseInt($input.val()) > stock) {
+                 $input.val(stock);
+                 this.showToast(`Aantal automatisch aangepast naar maximum: ${stock}`, 'warning');
+            }
+        }
+    }
+
+    /**
+     * Validatie van de aantallen.
+     * Zorgt dat min 1 is, en max niet overschreden wordt.
+     */
+    handleQuantityChange(event, $input) {
+        const $select = $input.closest('.product-row').find('select');
+        const stock = $select.find(':selected').data('stock');
+        let val = parseInt($input.val());
+
+        // Als veld leeg is of ongeldig, zet terug naar 1 (alleen bij focus verlies 'blur')
+        if (event.type === 'blur' && (!val || isNaN(val))) {
+            $input.val(1);
+            val = 1;
+        }
+
+        // Minimum check
+        if (!isNaN(val) && val < 1) {
+            $input.val(1);
+            val = 1;
+        }
+
+        // Maximum check
+        if (stock !== undefined && val > stock) {
+            $input.val(stock);
+            this.showToast(`Er zijn maar ${stock} stuks op voorraad.`, 'error');
+        }
+    }
+
+    /**
+     * Hoofd validatie functie. Wordt aangeroepen na elke wijziging.
+     * Taken:
+     * 1. Checkt welke producten al gekozen zijn in andere rijen en schakelt deze uit ('disable').
+     * 2. Controleert of alle rijen geldig zijn.
+     * 3. Beheert de status van de 'Opslaan' knop (Dirty Checking).
+     */
+    validateForm() {
+        const $selects = this.elements.container.find('select.product-select');
+
+        // 1. Verzamel alle gekozen ID's om duplicaten te voorkomen
         const selectedIds = [];
-        selects.each(function() {
+        $selects.each(function() {
             const val = $(this).val();
             if(val) selectedIds.push(parseInt(val));
         });
 
-        const self = this; // context safety
+        let invalidCount = 0;
+        let validProductCount = 0;
 
-        selects.each(function() {
-            const $select = $(this);
-            const currentVal = parseInt($select.val());
-            const $row = $select.closest('.product-row');
+        // 2. Loop door elke select om opties bij te werken
+        $selects.each((index, el) => {
+            const $el = $(el);
+            const currentVal = parseInt($el.val());
 
-            // Cleanup error state
-            $select.removeClass('border-red-500 bg-red-50 text-red-900').addClass('border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300');
-            $row.find('.error-msg').remove();
+            // Update 'disabled' status van opties in DEZE dropdown
+            $el.find('option:not(:first)').each((i, opt) => {
+                const optVal = parseInt($(opt).val());
 
-            // Rebuild options with duplicate Logic
-            // We want to keep the current selection, but disable other options if they are selected elsewhere.
-            // Also check if currentVal is valid in productsData (Client constraint)
-
-            // 1. Check Constraint
-
-            // If we have productsData loaded, verify.
-            // (If fetching, this runs after fetch)
-
-            let isValidForClient = true;
-            let currentText = "";
-            let currentStock = 0;
-
-            if (currentVal) {
-                const productInList = self.productsData.find(p => p.id === currentVal);
-                if (!productInList) {
-                    isValidForClient = false;
-                    // Try to retrieve text from existing option if possible, or we are blind
-                    currentText = $select.find('option:selected').text();
-                    if(!currentText || currentText === '-- Selecteer product --') currentText = "Onbekend Product";
+                // Als dit product al ergens anders is gekozen, disable het
+                // Behalve als het de huidige selectie van deze dropdown is
+                if(selectedIds.includes(optVal) && optVal !== currentVal) {
+                    $(opt).prop('disabled', true).addClass('bg-gray-100 text-gray-400');
                 } else {
-                    validProductCount++;
-                    currentStock = productInList.aantal_voorraad || productInList.voorraad;
+                    $(opt).prop('disabled', false).removeClass('bg-gray-100 text-gray-400');
                 }
-            }
-
-            // Re-populate options to refresh disabled states
-            $select.empty();
-            $select.append('<option value="">-- Selecteer product --</option>');
-
-            self.productsData.forEach(prod => {
-                const stock = prod.aantal_voorraad || prod.voorraad;
-                const option = $('<option></option>')
-                    .attr('value', prod.id)
-                    .text(`${prod.product_naam || prod.naam} (${stock} beschikbaar)`)
-                    .data('stock', stock);
-
-                // Disable if selected elsewhere
-                if (selectedIds.includes(prod.id) && prod.id !== currentVal) {
-                    option.prop('disabled', true).addClass('bg-gray-100 text-gray-400');
-                }
-
-                if (prod.id === currentVal) {
-                    option.prop('selected', true);
-                }
-
-                $select.append(option);
             });
 
-            // Handle invalid product (not allowed for client)
-            if (currentVal && !isValidForClient) {
-                 const invalidOption = $('<option></option>')
-                    .attr('value', currentVal)
-                    .text(`${currentText} (Niet toegestaan)`)
-                    .prop('selected', true)
-                    .prop('disabled', true);
-
-                $select.append(invalidOption);
-                $select.addClass('border-red-500 bg-red-50 text-red-900').removeClass('border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300');
-                $row.append('<p class="error-msg text-xs text-red-600 mt-1">Dit product mag niet voor deze klant. Verwijder of wijzig.</p>');
-                invalidCount++;
-            }
+            if (currentVal) validProductCount++;
         });
 
-        // Submit Button State
-        const $submitBtn = $(this.submitBtnSelector);
+        // 3. Controleer of knop aan of uit moet
 
-        // Dirty Check
-        const isDirty = this.getSnapshot() !== this.initialState;
+        // Heeft de gebruiker iets veranderd t.o.v. het begin?
+        const isDirty = this.takeSnapshot() !== this.state.initialData;
 
-        if (invalidCount > 0) {
-            $submitBtn.prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
-        } else if (validProductCount === 0) {
-             // If valid products are 0, we can't submit anyway (unless deleting package is implied by empty? Assuming not)
-            $submitBtn.prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
-        } else if (!isDirty) {
-             // No changes made
-             $submitBtn.prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+        const isDisabled = (invalidCount > 0) || (validProductCount === 0) || (!isDirty);
+        const disabledClass = 'opacity-50 cursor-not-allowed';
+
+        if(isDisabled) {
+            this.elements.submitBtn.prop('disabled', true).addClass(disabledClass);
         } else {
-            $submitBtn.prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+            this.elements.submitBtn.prop('disabled', false).removeClass(disabledClass);
         }
     }
 
-    captureInitialState() {
-        this.initialState = this.getSnapshot();
-        // Force re-validation to update button state immediately
-        this.updateProductDropdownsAndValidate();
-    }
-
-    getSnapshot() {
-        const products = [];
-        $(`#${this.containerId} .product-row`).each(function() {
+    /**
+     * Maakt een JSON string van de huidige formulier data.
+     * Wordt gebruikt om te vergelijken of er iets gewijzigd is ('Dirty Check').
+     *
+     * @returns {string} JSON representatie van [ {id: 1, qty: 5}, ... ]
+     */
+    takeSnapshot() {
+        const data = [];
+        this.elements.container.find('.product-row').each(function() {
             const $row = $(this);
             const pid = parseInt($row.find('select').val());
-            const qty = parseInt($row.find('input[type="number"]').val());
+            const qty = parseInt($row.find('input').val());
+
+            // Alleen complete rijen tellen mee
             if (pid && qty) {
-                products.push({ id: pid, qty: qty });
+                data.push({ id: pid, qty });
             }
         });
-        // Sort by ID to ensure order doesn't affect "equality"
-        products.sort((a, b) => a.id - b.id);
-        return JSON.stringify(products);
+
+        // Sorteer op ID zodat volgorde van rijen niet uitmaakt voor de vergelijking
+        data.sort((a,b) => a.id - b.id);
+
+        return JSON.stringify(data);
     }
 
+    /**
+     * Sla de huidige staat op als 'beginpunt'.
+     * Dit roep je aan nadat de Edit-pagina de bestaande producten heeft ingeladen.
+     */
+    captureInitialState() {
+        this.state.initialData = this.takeSnapshot();
+        this.validateForm(); // Update knop status direct
+    }
+
+    /**
+     * Hulpfunctie: Toon een tijdelijke notificatie (Toast).
+     *
+     * @param {string} message - Het bericht.
+     * @param {string} type - 'error' (rood) of 'success' (groen/waarschuwing).
+     */
     showToast(message, type = 'error') {
-        const colorClass = type === 'error' ? 'bg-red-500' : 'bg-green-500';
-        const toast = $(`
-            <div class="${colorClass} text-white px-6 py-4 rounded shadow-lg transform transition-all duration-300 translate-y-full opacity-0 flex items-center gap-2">
+        const color = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+
+        // Maak HTML element
+        const $toast = $(`
+            <div class="${color} text-white px-6 py-4 rounded shadow-lg transform transition-all duration-300 translate-y-full opacity-0 flex items-center gap-2 mb-2">
                 <span>${message}</span>
-                <button type="button" class="ml-4 font-bold close-toast">&times;</button>
+                <button type="button" class="ml-4 font-bold opacity-75 hover:opacity-100">&times;</button>
             </div>
         `);
 
-        toast.find('.close-toast').on('click', function() { $(this).parent().remove(); });
+        // Klik om te sluiten
+        $toast.find('button').on('click', () => $toast.remove());
 
-        $(`#${this.toastContainerId}`).append(toast);
-        setTimeout(() => toast.removeClass('translate-y-full opacity-0'), 10);
+        // Voeg toe aan DOM
+        this.elements.toastContainer.append($toast);
+
+        // Animatie in
+        setTimeout(() => $toast.removeClass('translate-y-full opacity-0'), 10);
+
+        // Animatie uit (na 3 seconden)
         setTimeout(() => {
-            toast.addClass('translate-y-full opacity-0');
-            setTimeout(() => toast.remove(), 300);
+            $toast.addClass('translate-y-full opacity-0');
+            setTimeout(() => $toast.remove(), 300);
         }, 3000);
-    }
-
-    // Method to load initial rows (for Edit)
-    loadExistingProducts(products) {
-        // products is array of {product_id, aantal}
-        // However, we need to ensure productsData is loaded first!
-        // This is tricky async.
-        // It's better if handleKlantChange promise returns, then we call this.
     }
 }

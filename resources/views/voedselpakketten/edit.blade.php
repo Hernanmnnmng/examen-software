@@ -67,12 +67,12 @@
             if (klantId) {
                 // Initialize Manager with Client Products
                 // Using the promise we added
-                manager.handleKlantChange(klantId, true).then(() => {
+                manager.fetchProductsForClient(klantId, true).then(() => {
                     // Load Existing Products provided by Controller
                     const existingProducts = @json($producten);
 
                     existingProducts.forEach(prod => {
-                        manager.addProductRow(null, {
+                        manager.addProductRow({
                             product_id: prod.product_id,
                             aantal: prod.aantal,
                             name: prod.product_naam,
