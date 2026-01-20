@@ -13,6 +13,7 @@ BEGIN
         vpkt.id
         ,vpkt.klant_id
         ,vpkt.pakketnummer
+        ,vpkt.datum_uitgifte
         ,klnt.naam
         ,gzn.gezins_naam
         ,COUNT(vdpr.id) AS producten_totaal

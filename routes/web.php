@@ -36,6 +36,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/voedselpakketten', [VoedselpakketController::class, 'index'])
         ->middleware('role:Vrijwilliger')
         ->name('voedselpakketten.index');
+
+    Route::get('/voedselpakketten/create', [VoedselpakketController::class, 'create'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.create');
+
     Route::get('/voedselpakketten/{voedselpakketid}', [VoedselpakketController::class, 'show'])
         ->middleware('role:Vrijwilliger')
         ->name('voedselpakketten.show');
@@ -47,6 +52,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/voedselpakketten/{voedselpakketid}', [VoedselpakketController::class, 'destroy'])
         ->middleware('role:Vrijwilliger')
         ->name('voedselpakketten.destroy');
+
+    Route::post('/voedselpakketten/{voedselpakketid}/deliver', [VoedselpakketController::class, 'deliver'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.deliver');
 
     Route::get('/voedselpakketten/{voedselpakketid}/edit', [VoedselpakketController::class, 'edit'])
         ->middleware('role:Vrijwilliger')

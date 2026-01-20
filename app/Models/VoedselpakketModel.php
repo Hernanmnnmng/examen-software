@@ -147,4 +147,22 @@ class VoedselpakketModel extends Model
         }
     }
 
+    public static function delivervoedselpakket($id){
+        try {
+            Log::info("\n\nVoedselpakket uitreiken in database met ID: $id...\n");
+            $res = DB::select('CALL SP_DeliverVoedselpakket(?)', [$id]);
+
+            if($res && count($res) > 0) {
+                Log::info("\n\nVoedselpakket uitgereikt in database.\n");
+                return $res[0]->Affected;
+            }
+             // Even if row_count is 0 (already done), it returns a row with Affected=0 often.
+             // But if specific select logic is used, handled here. SP returns ROW_COUNT() as Affected.
+            return 0;
+        } catch (\Throwable $th) {
+            Log::error("\n\nFout bij het uitreiken van voedselpakket in de database: " . $th->getMessage() . "\n");
+            return -1;
+        }
+    }
+
 }

@@ -9,10 +9,14 @@ class VoedselpakketController extends Controller
 {
     //
     public function index(){
-        $klanten = VoedselpakketModel::getallklanten();
         $voedselpakketten = VoedselpakketModel::getallvoedselpakketten();
 
-        return view('voedselpakketten.index', compact('klanten', 'voedselpakketten'));
+        return view('voedselpakketten.index', compact('voedselpakketten'));
+    }
+
+    public function create(){
+        $klanten = VoedselpakketModel::getallklanten();
+        return view('voedselpakketten.create', compact('klanten'));
     }
 
     public function getproducten($id){
@@ -30,6 +34,12 @@ class VoedselpakketController extends Controller
         if(empty($voedselpakket)){
              return redirect()->route('voedselpakketten.index')->with('error', 'Pakket niet gevonden.');
         }
+
+        // Check if package is already delivered
+        if($voedselpakket[0]->datum_uitgifte != null) {
+            return redirect()->route('voedselpakketten.index')->with('error', 'Dit pakket is al uitgereikt en kan niet meer bewerkt worden.');
+        }
+
         $producten = VoedselpakketModel::getvoedselpakketproducten($voedselpakketid);
         return view('voedselpakketten.edit', compact('voedselpakket', 'producten'));
     }
@@ -94,6 +104,12 @@ class VoedselpakketController extends Controller
     }
 
     public function update(Request $request, $voedselpakketid){
+        // Verify status before updating
+        $voedselpakket = VoedselpakketModel::getvoedselpakketbyid($voedselpakketid);
+        if(!empty($voedselpakket) && $voedselpakket[0]->datum_uitgifte != null) {
+             return redirect()->route('voedselpakketten.index')->with('error', 'Dit pakket is al uitgereikt en kan niet meer bewerkt worden.');
+        }
+
         $validatedData = $request->validate([
             'klant_id' => 'required|integer',
             'producten' => 'required|array',
@@ -146,5 +162,15 @@ class VoedselpakketController extends Controller
         }
 
         return redirect()->route('voedselpakketten.index')->with('success', 'Voedselpakket succesvol bijgewerkt.');
+    }
+
+    public function deliver($voedselpakketid){
+        $result = VoedselpakketModel::delivervoedselpakket($voedselpakketid);
+
+        if($result != -1) {
+             return redirect()->route('voedselpakketten.index')->with('success', 'Voedselpakket is succesvol uitgereikt.');
+        }
+
+        return redirect()->route('voedselpakketten.index')->with('error', 'Kon voedselpakket niet uitreiken.');
     }
 }
