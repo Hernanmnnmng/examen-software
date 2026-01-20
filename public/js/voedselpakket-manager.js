@@ -287,10 +287,10 @@ export class VoedselpakketManager {
 
         // Submit Button State
         const $submitBtn = $(this.submitBtnSelector);
-
+        
         // Dirty Check
         const isDirty = this.getSnapshot() !== this.initialState;
-
+        
         if (invalidCount > 0) {
             $submitBtn.prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
         } else if (validProductCount === 0) {

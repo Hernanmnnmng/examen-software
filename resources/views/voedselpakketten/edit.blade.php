@@ -51,7 +51,7 @@
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
     <script type="module">
-        import { VoedselpakketManager } from '/resources/js/voedselpakket-manager.js';
+        import { VoedselpakketManager } from '/js/voedselpakket-manager.js';
 
         $(document).ready(function() {
             const manager = new VoedselpakketManager({
@@ -74,9 +74,14 @@
                     existingProducts.forEach(prod => {
                         manager.addProductRow(null, {
                             product_id: prod.product_id,
-                            aantal: prod.aantal
+                            aantal: prod.aantal,
+                            name: prod.product_naam,
+                            stock: prod.aantal_voorraad
                         });
                     });
+
+                    // Capture state after loading all existing products
+                    manager.captureInitialState();
                 });
             }
         });

@@ -180,7 +180,7 @@
                                 <div id="producten-container" class="space-y-3">
                                     {{-- Rows will be added dynamically --}}
                                 </div>
-                                <button type="button" onclick="addProductRow()" id="add-product-btn" class="mt-3 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300">+ Nog een product</button>
+                                <button type="button" id="add-product-btn" class="mt-3 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300">+ Nog een product</button>
                                 @error('producten')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -203,7 +203,7 @@
     <!-- But standard Laravel usually bundles. For this specific request, I will write the script inside the script tag at the bottom. -->
 
     <script type="module">
-        import { VoedselpakketManager } from '/resources/js/voedselpakket-manager.js';
+        import { VoedselpakketManager } from '/js/voedselpakket-manager.js';
 
         $(document).ready(function() {
             const manager = new VoedselpakketManager({
@@ -213,11 +213,6 @@
                 submitBtnSelector: 'button[type="submit"]',
                 toastContainerId: 'toast-container'
             });
-
-            // Make addProductRow global for the onclick attribute (if still used)
-            window.addProductRow = function() {
-                manager.addProductRow();
-            };
         });
     </script>
 </x-app-layout>

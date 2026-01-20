@@ -22,11 +22,16 @@ BEGIN
         klanten klnt ON vpkt.klant_id = klnt.id
     JOIN
         gezinnen gzn ON klnt.gezin_id = gzn.id
-    JOIN
+    LEFT JOIN
         voedselpakket_producten vdpr ON vdpr.voedselpakket_id = vpkt.id
     WHERE
         vpkt.id = id
-    ORDER BY vpkt.id DESC;
+    GROUP BY
+        vpkt.id
+        ,vpkt.klant_id
+        ,vpkt.pakketnummer
+        ,klnt.naam
+        ,gzn.gezins_naam;
 END$$
 
 DELIMITER ;
