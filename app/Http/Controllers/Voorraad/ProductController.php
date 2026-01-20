@@ -106,9 +106,13 @@ class ProductController extends Controller
     public function create(): View
     {
         $categorieen = $this->getCategorieen();
+        $allergenen = $this->getAllergenen();
+        $wensen = $this->getWensen();
 
         return view('voorraad.producten.create', [
             'categorieen' => $categorieen,
+            'allergenen' => $allergenen,
+            'wensen' => $wensen,
         ]);
     }
 
@@ -122,28 +126,80 @@ class ProductController extends Controller
             'categorie_id' => ['required', 'integer', 'exists:product_categorieen,id'],
             'ean' => ['required', 'digits:13'],
             'aantal_voorraad' => ['required', 'integer', 'min:0'],
+            'allergie_ids' => ['nullable', 'array'],
+            'allergie_ids.*' => ['integer', 'exists:allergenen,id'],
+            'wens_ids' => ['nullable', 'array'],
+            'wens_ids.*' => ['integer', 'exists:wensen,id'],
         ]);
 
         try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_product_create(?, ?, ?, ?)', [
-                    $validated['product_naam'],
-                    $validated['ean'],
-                    (int) $validated['categorie_id'],
-                    (int) $validated['aantal_voorraad'],
-                ]);
-            } else {
-                // SQLite/testing fallback
-                DB::table('producten')->insert([
-                    'product_naam' => $validated['product_naam'],
-                    'ean' => $validated['ean'],
-                    'categorie_id' => (int) $validated['categorie_id'],
-                    'aantal_voorraad' => (int) $validated['aantal_voorraad'],
-                    'is_actief' => 1,
-                    'datum_aangemaakt' => now(),
-                    'datum_gewijzigd' => now(),
-                ]);
-            }
+            DB::transaction(function () use ($validated) {
+                $driver = DB::connection()->getDriverName();
+                $now = now();
+
+                $productId = null;
+
+                if ($driver === 'mysql') {
+                    DB::select('CALL sp_product_create(?, ?, ?, ?)', [
+                        $validated['product_naam'],
+                        $validated['ean'],
+                        (int) $validated['categorie_id'],
+                        (int) $validated['aantal_voorraad'],
+                    ]);
+
+                    // Stored procedure doesn't return the id; lookup by unique EAN.
+                    $productId = DB::table('producten')
+                        ->where('ean', '=', $validated['ean'])
+                        ->value('id');
+                } else {
+                    // SQLite/testing fallback
+                    $productId = (int) DB::table('producten')->insertGetId([
+                        'product_naam' => $validated['product_naam'],
+                        'ean' => $validated['ean'],
+                        'categorie_id' => (int) $validated['categorie_id'],
+                        'aantal_voorraad' => (int) $validated['aantal_voorraad'],
+                        'is_actief' => 1,
+                        'datum_aangemaakt' => $now,
+                        'datum_gewijzigd' => $now,
+                    ]);
+                }
+
+                $productId = (int) $productId;
+
+                // Optional: link allergenen (merge-friendly; table might not exist everywhere).
+                if ($productId > 0 && Schema::hasTable('product_allergenen')) {
+                    $allergieIds = array_values(array_unique(array_map('intval', $validated['allergie_ids'] ?? [])));
+
+                    if (! empty($allergieIds)) {
+                        $rows = array_map(static fn (int $allergieId) => [
+                            'product_id' => $productId,
+                            'allergie_id' => $allergieId,
+                            'is_actief' => 1,
+                            'datum_aangemaakt' => $now,
+                            'datum_gewijzigd' => $now,
+                        ], $allergieIds);
+
+                        DB::table('product_allergenen')->insertOrIgnore($rows);
+                    }
+                }
+
+                // Optional: link kenmerken/wensen (merge-friendly; table might not exist everywhere).
+                if ($productId > 0 && Schema::hasTable('product_kenmerken')) {
+                    $wensIds = array_values(array_unique(array_map('intval', $validated['wens_ids'] ?? [])));
+
+                    if (! empty($wensIds)) {
+                        $rows = array_map(static fn (int $wensId) => [
+                            'product_id' => $productId,
+                            'wens_id' => $wensId,
+                            'is_actief' => 1,
+                            'datum_aangemaakt' => $now,
+                            'datum_gewijzigd' => $now,
+                        ], $wensIds);
+
+                        DB::table('product_kenmerken')->insertOrIgnore($rows);
+                    }
+                }
+            });
 
             return redirect()
                 ->route('voorraad.producten.index')
@@ -165,6 +221,10 @@ class ProductController extends Controller
     public function edit(int $id): View
     {
         $categorieen = $this->getCategorieen();
+        $allergenen = $this->getAllergenen();
+        $selectedAllergieIds = $this->getSelectedAllergieIds($id);
+        $wensen = $this->getWensen();
+        $selectedWensIds = $this->getSelectedWensIds($id);
         $product = null;
 
         if (DB::connection()->getDriverName() === 'mysql') {
@@ -179,6 +239,10 @@ class ProductController extends Controller
         return view('voorraad.producten.edit', [
             'product' => $product,
             'categorieen' => $categorieen,
+            'allergenen' => $allergenen,
+            'selectedAllergieIds' => $selectedAllergieIds,
+            'wensen' => $wensen,
+            'selectedWensIds' => $selectedWensIds,
         ]);
     }
 
@@ -192,27 +256,74 @@ class ProductController extends Controller
             'categorie_id' => ['required', 'integer', 'exists:product_categorieen,id'],
             'ean' => ['required', 'digits:13'],
             'aantal_voorraad' => ['required', 'integer', 'min:0'],
+            'allergie_ids' => ['nullable', 'array'],
+            'allergie_ids.*' => ['integer', 'exists:allergenen,id'],
+            'wens_ids' => ['nullable', 'array'],
+            'wens_ids.*' => ['integer', 'exists:wensen,id'],
         ]);
 
         try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_product_update(?, ?, ?, ?, ?)', [
-                    $id,
-                    $validated['product_naam'],
-                    $validated['ean'],
-                    (int) $validated['categorie_id'],
-                    (int) $validated['aantal_voorraad'],
-                ]);
-            } else {
-                // SQLite/testing fallback
-                DB::table('producten')->where('id', $id)->update([
-                    'product_naam' => $validated['product_naam'],
-                    'ean' => $validated['ean'],
-                    'categorie_id' => (int) $validated['categorie_id'],
-                    'aantal_voorraad' => (int) $validated['aantal_voorraad'],
-                    'datum_gewijzigd' => now(),
-                ]);
-            }
+            DB::transaction(function () use ($validated, $id) {
+                $driver = DB::connection()->getDriverName();
+                $now = now();
+
+                if ($driver === 'mysql') {
+                    DB::select('CALL sp_product_update(?, ?, ?, ?, ?)', [
+                        $id,
+                        $validated['product_naam'],
+                        $validated['ean'],
+                        (int) $validated['categorie_id'],
+                        (int) $validated['aantal_voorraad'],
+                    ]);
+                } else {
+                    // SQLite/testing fallback
+                    DB::table('producten')->where('id', $id)->update([
+                        'product_naam' => $validated['product_naam'],
+                        'ean' => $validated['ean'],
+                        'categorie_id' => (int) $validated['categorie_id'],
+                        'aantal_voorraad' => (int) $validated['aantal_voorraad'],
+                        'datum_gewijzigd' => $now,
+                    ]);
+                }
+
+                // Optional: sync allergenen (merge-friendly; table might not exist everywhere).
+                if (Schema::hasTable('product_allergenen')) {
+                    $allergieIds = array_values(array_unique(array_map('intval', $validated['allergie_ids'] ?? [])));
+
+                    DB::table('product_allergenen')->where('product_id', $id)->delete();
+
+                    if (! empty($allergieIds)) {
+                        $rows = array_map(static fn (int $allergieId) => [
+                            'product_id' => $id,
+                            'allergie_id' => $allergieId,
+                            'is_actief' => 1,
+                            'datum_aangemaakt' => $now,
+                            'datum_gewijzigd' => $now,
+                        ], $allergieIds);
+
+                        DB::table('product_allergenen')->insertOrIgnore($rows);
+                    }
+                }
+
+                // Optional: sync kenmerken/wensen (merge-friendly; table might not exist everywhere).
+                if (Schema::hasTable('product_kenmerken')) {
+                    $wensIds = array_values(array_unique(array_map('intval', $validated['wens_ids'] ?? [])));
+
+                    DB::table('product_kenmerken')->where('product_id', $id)->delete();
+
+                    if (! empty($wensIds)) {
+                        $rows = array_map(static fn (int $wensId) => [
+                            'product_id' => $id,
+                            'wens_id' => $wensId,
+                            'is_actief' => 1,
+                            'datum_aangemaakt' => $now,
+                            'datum_gewijzigd' => $now,
+                        ], $wensIds);
+
+                        DB::table('product_kenmerken')->insertOrIgnore($rows);
+                    }
+                }
+            });
 
             return redirect()
                 ->route('voorraad.producten.index')
@@ -292,6 +403,75 @@ class ProductController extends Controller
             ->where('is_actief', '=', 1)
             ->orderBy('naam', 'asc')
             ->get();
+    }
+
+    /**
+     * Allergenen for multi-select/checkboxes.
+     */
+    private function getAllergenen()
+    {
+        // Merge-friendly: not all environments will have this table yet.
+        if (! Schema::hasTable('allergenen')) {
+            return collect();
+        }
+
+        return DB::table('allergenen')
+            ->select(['id', 'naam'])
+            ->where('is_actief', '=', 1)
+            ->orderBy('naam', 'asc')
+            ->get();
+    }
+
+    /**
+     * Selected allergenen for a given product.
+     *
+     * @return array<int>
+     */
+    private function getSelectedAllergieIds(int $productId): array
+    {
+        if (! Schema::hasTable('product_allergenen')) {
+            return [];
+        }
+
+        return DB::table('product_allergenen')
+            ->where('product_id', '=', $productId)
+            ->pluck('allergie_id')
+            ->map(static fn ($v) => (int) $v)
+            ->all();
+    }
+
+    /**
+     * Wensen/kenmerken for multi-select/checkboxes.
+     */
+    private function getWensen()
+    {
+        if (! Schema::hasTable('wensen')) {
+            return collect();
+        }
+
+        return DB::table('wensen')
+            ->select(['id', 'omschrijving'])
+            ->where('is_actief', '=', 1)
+            ->orderBy('omschrijving', 'asc')
+            ->get();
+    }
+
+    /**
+     * Selected wensen/kenmerken for a given product.
+     *
+     * @return array<int>
+     */
+    private function getSelectedWensIds(int $productId): array
+    {
+        if (! Schema::hasTable('product_kenmerken')) {
+            return [];
+        }
+
+        return DB::table('product_kenmerken')
+            ->where('product_id', '=', $productId)
+            ->pluck('wens_id')
+            ->map(static fn ($v) => (int) $v)
+            ->all();
     }
 
     /**

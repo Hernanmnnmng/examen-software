@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Merge-friendly / safe-guard:
+        // Some earlier scaffolds already created the sessions table elsewhere.
+        // Avoid failing migrations on databases where it already exists.
+        if (Schema::hasTable('sessions')) {
+            return;
+        }
+
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
