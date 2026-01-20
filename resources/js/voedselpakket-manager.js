@@ -127,7 +127,28 @@ export class VoedselpakketManager {
             .then(res => {
                 this.state.products = res.data; // Sla producten op in state
                 this.toggleInterface(true);     // Activeer interface
-                this.validateForm();            // Her-valideer (update dropdown opties)
+
+                // BELANGRIJK: Update alle bestaande rijen met de nieuwe productenlijst!
+                // Dit zorgt ervoor dat als je van klant wisselt, de dropdowns ververst worden.
+                // Als een product NIET in de nieuwe lijst staat, behouden we het wel (via extraMeta)
+                // zodat de gebruiker het ziet, maar validateForm() zal het als fout markeren.
+                const self = this;
+                this.elements.container.find('.product-row').each(function() {
+                    const $row = $(this);
+                    const $select = $row.find('select.product-select');
+                    const currentVal = $select.val(); // Behoud huidige selectie indien mogelijk
+
+                    // Haal de tekst van de huidige optie op om te bewaren als hij niet meer bestaat
+                    let currentText = $select.find('option:selected').text();
+                    // Schoon de tekst op (verwijder eventuele vorige error statussen)
+                    currentText = currentText.replace(' (Niet toegestaan)', '').replace(/ \(\d+ beschikbaar\)/, '');
+
+                    // Render opties opnieuw op basis van de NIEUWE products set
+                    // We geven currentText mee als 'name' in extraMeta voor de fallback
+                    self.renderSelectOptions($select, currentVal, { name: currentText, stock: 999 });
+                });
+
+                this.validateForm();            // Her-valideer (update disable states en knoppen)
             })
             .catch(err => {
                 console.error("Fout bij ophalen producten:", err);
@@ -218,12 +239,12 @@ export class VoedselpakketManager {
             $select.append(option);
         });
 
-        // Fallback: Als het product ID wel bestaat maar niet in de lijst (bijv. uitverkocht of verwijderd sinds opslaan)
+        // Fallback: Als het product ID wel bestaat maar niet in de lijst (bijv. uitverkocht of niet toegestaan voor huidige klant)
         // Voeg het handmatig toe zodat de gebruiker ziet wat er geselecteerd was.
         if (selectedValue && !foundInList && extraMeta) {
              const option = $('<option></option>')
                     .attr('value', selectedValue)
-                    .text(`${extraMeta.name || 'Onbekend'} (Niet meer beschikbaar?)`)
+                    .text(`${extraMeta.name || 'Onbekend'} (Niet toegestaan)`) // Duidelijke markering
                     .data('stock', extraMeta.stock || 0)
                     .prop('selected', true);
             $select.append(option);
