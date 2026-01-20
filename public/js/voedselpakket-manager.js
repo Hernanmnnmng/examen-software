@@ -322,6 +322,26 @@ export class VoedselpakketManager {
         $selects.each((index, el) => {
             const $el = $(el);
             const currentVal = parseInt($el.val());
+            const $row = $el.closest('.product-row');
+
+            // Reset visual state
+            $el.removeClass('border-red-500 text-red-900').addClass('border-gray-300 dark:border-gray-700 dark:text-gray-300');
+            $row.find('.error-msg-client').remove();
+
+            // STRICT Check: Is dit product toegestaan voor de huidige lijst?
+            if (currentVal) {
+                // this.state.products bevat de TOEGESTANE producten voor de huidige klant
+                const isAllowed = this.state.products.find(p => p.id === currentVal);
+                
+                if (!isAllowed) {
+                    // NIET TOEGESTAAN!
+                    invalidCount++;
+                    $el.addClass('border-red-500 text-red-900').removeClass('border-gray-300 dark:border-gray-700 dark:text-gray-300');
+                    $row.find('> div:first').append('<p class="error-msg-client text-xs text-red-600 mt-1 font-bold">⚠️ Niet toegestaan voor deze klant.</p>');
+                } else {
+                    validProductCount++;
+                }
+            }
 
             // Update 'disabled' status van opties in DEZE dropdown
             $el.find('option:not(:first)').each((i, opt) => {
@@ -335,8 +355,6 @@ export class VoedselpakketManager {
                     $(opt).prop('disabled', false).removeClass('bg-gray-100 text-gray-400');
                 }
             });
-
-            if (currentVal) validProductCount++;
         });
 
         // 3. Controleer of knop aan of uit moet
