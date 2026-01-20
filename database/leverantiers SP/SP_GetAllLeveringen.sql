@@ -4,6 +4,7 @@ DELIMITER ??
 CREATE PROCEDURE SP_GetAllLeveringen()
 BEGIN
     SELECT 
+        lvng.id,
         lvrn.bedrijfsnaam,
         cprs.contact_naam,
         lvng.eerstvolgende_levering

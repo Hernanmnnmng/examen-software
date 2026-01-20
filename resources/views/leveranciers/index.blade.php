@@ -128,6 +128,7 @@
                                     </p>
                                 </div>
                             </div>
+                            <a href="{{ route('leveranciers.editleverancier', $id = $leverancier->id) }}">bijwerken</a>
                             <form method="POST" action="{{ route('leveranciers.softDelete', $leverancier->id) }}">
                                 @csrf
                                 @method('DELETE')
@@ -235,6 +236,7 @@
                             <th class="px-6 py-3">Leverancier</th>
                             <th class="px-6 py-3">Contactpersoon</th>
                             <th class="px-6 py-3">Volgende levering</th>
+                            <th class="px-6 py-3">Acties</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -246,6 +248,7 @@
                                 $formattedDate = \Carbon\Carbon::parse($levering->eerstvolgende_levering)->format('d-m-Y H:i');
                                 ?>
                                 <td class="px-6 py-4">{{ $formattedDate }}</td>
+                                <td><a href="{{ route('leveranciers.editlevering', $id = $levering->id) }}">bijwerken</a></td>
                             </tr>
                         @empty
                             <tr>Er zijn momenteel nog geen leveringen gemaakt.</tr>

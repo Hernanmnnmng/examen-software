@@ -104,27 +104,74 @@ class leveranciersController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function editleverancier($id)
     {
-        //
+        $leverancier = Leverancier::SP_GetLeverancierById($id);
+
+        if(!$leverancier) {
+            return redirect()->route('leveranciers.index')->with('error', 'Leverancier niet gevonden.');
+        }
+
+        return view('leveranciers.editleverancier', compact('leverancier'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function updateleverancier(Request $request, $id)
     {
-        //
+        $data = $request->validate([
+            'bedrijfsnaam' => 'required'
+        ]);
+
+        $data['id'] = $id;
+
+        $updated = Leverancier::SP_UpdateLeverancier($data);
+
+        if($updated) {
+            return redirect()->route('leveranciers.index')->with('success', 'Leverancier succesvol geüpdatet.');
+        } else {
+            return redirect()->back()->with('error', 'Er ging iets mis bij het updaten.');
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function editLevering($id)
     {
-        //
+        $levering = Leverancier::SP_GetLeveringById($id);
+        $leveranciers = Leverancier::SP_GetAllLeveranciers();
+
+        if (!$levering) {
+            return redirect()->route('leveranciers.index')
+                ->with('error', 'Levering niet gevonden');
+        }
+
+        return view('leveranciers.editlevering', [
+            'levering' => $levering,
+            'leveranciers' => $leveranciers
+        ]);
+    }
+
+    public function updateLevering(Request $request, $id)
+    {
+        $data = $request->validate([
+            'leverdatum_tijd' => 'required|date',
+            'eerstvolgende_levering' => 'required|date',
+            'leverancier_id' => 'required|integer'
+        ]);
+        
+        $id = $data['leverancier_id'];
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
+        
+        if($checkIsActief) {
+            $result = Leverancier::SP_CreateLevering($data);
+        } else {
+            return redirect()->back()->with('error', 'de geselecteerde bedrijf is niet meer actief');
+        }
+
+        $result = Leverancier::SP_UpdateLevering($id, $data);
+
+        if ($result) {
+            return redirect()->route('leveranciers.index')
+                ->with('success', 'Levering succesvol bijgewerkt');
+        }
+
+        return redirect()->back()->with('error', 'Fout bij bijwerken levering');
     }
 }

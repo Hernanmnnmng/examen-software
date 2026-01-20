@@ -43,6 +43,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Directie')
         ->name('leveranciers.softDelete');
 
+    Route::get('/admin/leveranciers/{id}/editleverancier', [leveranciersController::class, 'editleverancier'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.editleverancier');
+
+    Route::put('/admin/leveranciers/{id}', [leveranciersController::class, 'updateleverancier'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.updateleverancier');
+
+    Route::get('/admin/leveranciers/{id}/editlevering', [leveranciersController::class, 'editlevering'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.editlevering');
+
+    Route::put('/admin/leveranciers/{id}', [leveranciersController::class, 'updatelevering'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.updatelevering');
+
+
     // levering & leverancier routes eind
 
     Route::get('/dashboard/worker', [DashboardController::class, 'worker'])

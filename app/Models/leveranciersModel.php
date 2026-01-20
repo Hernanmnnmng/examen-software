@@ -86,4 +86,36 @@ class leveranciersModel extends Model
             $data['eerstvolgende_levering']
         ]);
      }
+
+
+     static public function SP_UpdateLeverancier($data)
+     {
+          return DB::statement('CALL SP_UpdateLeverancier(?, ?)', [
+               $data['id'],
+               $data['bedrijfsnaam']
+          ]);
+     }
+
+     static public function SP_GetLeverancierById($id)
+     {
+        $result = DB::select('CALL SP_GetLeverancierById(?)', [$id]);
+        return $result[0] ?? null; // stdClass of null
+     }
+
+     static public function SP_GetLeveringById($id)
+     {
+     $result = DB::select('CALL SP_GetLeveringById(?)', [$id]);
+     return $result[0] ?? null; // stdClass of null
+     }
+
+     static public function SP_UpdateLevering($id, $data)
+     {
+     return DB::statement('CALL SP_UpdateLevering(?, ?, ?, ?)', [
+          $id,
+          $data['leverdatum_tijd'],
+          $data['eerstvolgende_levering'],
+          $data['leverancier_id']
+     ]);
+     }
+
 }
