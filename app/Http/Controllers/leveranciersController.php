@@ -142,12 +142,26 @@ class leveranciersController extends Controller
             'bedrijfsnaam' => 'required'
         ]);
 
-        // id toevoegen aan data array
-        $data['id'] = $id;
+        // Bedrijfsnaam apart opslaan voor check
+        $name = $data['bedrijfsnaam'];
 
-        // SP uitvoeren om leverancier te updaten
-        $updated = Leverancier::SP_UpdateLeverancier($data);
+        // Checken of de bedrijfsnaam al bestaat via stored procedure
+        $checkNameExists = Leverancier::SP_GetLeverancierByBedrijfsnaam($name);
 
+        // Resultaat in $count zetten (0 = bestaat niet, >0 = bestaat)
+        $count = $checkNameExists[0]->totaal ?? 0;
+
+        // Als naam al bestaat, terug met foutmelding
+        // Zo niet, leverancier aanmaken
+        if ($count > 0) {
+            return redirect()->back()->with(
+                'error', 'deze leverancier bestaat al'
+            );
+        } else {
+            // id toevoegen aan data array
+            $data['id'] = $id;
+            $updated = Leverancier::SP_UpdateLeverancier($data);
+        }
         // Succes/foutmelding teruggeven
         if($updated) {
             return redirect()->route('leveranciers.index')->with('success', 'Leverancier succesvol geüpdatet.');
