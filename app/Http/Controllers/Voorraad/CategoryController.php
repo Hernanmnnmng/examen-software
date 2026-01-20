@@ -204,6 +204,15 @@ class CategoryController extends Controller
     {
         $message = $e->getMessage();
 
+        // MySQL stored procedure sp_category_delete blocks delete if products exist
+        // and raises SQLSTATE 45000 with a custom message.
+        if (
+            $e->getCode() === '45000' ||
+            str_contains(strtolower($message), 'categorie kan niet worden verwijderd')
+        ) {
+            return 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld';
+        }
+
         if (str_contains(strtolower($message), 'categorie bestaat al')) {
             return 'Categorie bestaat al';
         }
