@@ -332,7 +332,7 @@ export class VoedselpakketManager {
             if (currentVal) {
                 // this.state.products bevat de TOEGESTANE producten voor de huidige klant
                 const isAllowed = this.state.products.find(p => p.id === currentVal);
-                
+
                 if (!isAllowed) {
                     // NIET TOEGESTAAN!
                     invalidCount++;
