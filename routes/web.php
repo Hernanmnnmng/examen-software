@@ -32,6 +32,11 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:Directie')
         ->name('leveranciers.index');
 
+    // Separate create page (merge-friendly; keep POST route unchanged)
+    Route::get('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'createLeverancier'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.createLeverancier');
+
     Route::post('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'storeLeverancier'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLeverancier');
