@@ -21,6 +21,7 @@ export class VoedselpakketManager {
     constructor(config) {
         // Configuratie opslaan
         this.config = config;
+        this.errorIndices = config.errorIndices || []; // Indices die server-side fouten gaven
 
         // Cache voor jQuery elementen (prestatie optimalisatie)
         this.elements = {
@@ -162,33 +163,50 @@ export class VoedselpakketManager {
      * Voegt een nieuwe product-rij toe aan de HTML.
      *
      * @param {Object|null} data - (Optioneel) Data om in te vullen: {product_id, aantal, name, stock}.
+     * @param {number|null} explicitIndex - (Optioneel) Forceer een specifieke index (voor error-herstel).
      */
-    addProductRow(data = null) {
+    addProductRow(data = null, explicitIndex = null) {
         // Stop als er geen klant is geselecteerd (beveiliging)
         if (!this.elements.klantSelect.val() && !data) {
             this.showToast('Selecteer eerst een klant.', 'error');
             return;
         }
 
-        this.state.rowCount++;
-        const index = this.state.rowCount; // Unieke index voor name="" attributen
+        let index;
+        if (explicitIndex !== null) {
+            index = parseInt(explicitIndex);
+            // Zorg dat de teller niet achterloopt op harde indices
+            if (index > this.state.rowCount) {
+                this.state.rowCount = index;
+            }
+        } else {
+            this.state.rowCount++;
+            index = this.state.rowCount;
+        }
 
         // Bepaal startwaardes (leeg of vanuit data)
         const currentQty = data ? data.aantal : 1;
+
+        // Check of deze rij een foutmelding heeft
+        const hasError = this.errorIndices.includes(index) || this.errorIndices.map(String).includes(String(index));
+        const borderBase = "rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2";
+        const borderClass = hasError
+            ? "border-red-500 ring-1 ring-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/20 dark:border-red-500"
+            : "border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300";
 
         // De HTML template voor één rij
         // Gebruikt Tailwind classes voor styling
         const rowHtml = `
             <div class="flex gap-3 product-row mb-3 items-start">
                 <div class="flex-1">
-                    <select name="producten[${index}][product_id]" class="product-select w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2">
+                    <select name="producten[${index}][product_id]" class="product-select w-full ${borderBase} ${borderClass}">
                         <option value="">-- Selecteer product --</option>
                     </select>
                 </div>
                 <div>
                     <input type="number" name="producten[${index}][aantal]"
                            min="1" value="${currentQty}" placeholder="Aantal"
-                           class="quantity-input w-24 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2">
+                           class="quantity-input w-24 ${borderBase} ${borderClass}">
                 </div>
                 <div>
                     <button type="button" class="remove-row-btn px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-200 transition-colors">
@@ -256,7 +274,42 @@ export class VoedselpakketManager {
      * Update voornamelijk het 'max' attribuut van het aantal-veld.
      */
     handleProductSelection($select) {
-        // Geen client-side restricties meer hier
+        this.validateRow($select.closest('.product-row'));
+    }
+
+    /**
+     * Controleert één rij op geldigheid (voorraad check).
+     * @param {jQuery} $row - De rij om te checken.
+     */
+    validateRow($row) {
+        const $select = $row.find('select.product-select');
+        const $input = $row.find('input.quantity-input');
+
+        const stock = $select.find('option:selected').data('stock');
+        const qty = parseInt($input.val()) || 0;
+
+        // Bepaal of er een fout is (te veel gevraagd)
+        // Let op: als stock undefined is (bijv. geen selectie), geen fout geven
+        const hasError = (stock !== undefined && qty > stock);
+
+        this.toggleErrorState($row, hasError);
+    }
+
+    /**
+     * Schakelt de rode styling in/uit voor een rij.
+     */
+    toggleErrorState($row, hasError) {
+        const $inputs = $row.find('select, input');
+        const errorClasses = "border-red-500 ring-1 ring-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/20 dark:border-red-500";
+        const normalClasses = "border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300";
+
+        if (hasError) {
+            $inputs.removeClass(normalClasses).addClass(errorClasses);
+        } else {
+            // Alleen weghalen als het NIET in de server-errors zit?
+            // Nee, live correctie moet voorrang hebben.
+             $inputs.removeClass(errorClasses).addClass(normalClasses);
+        }
     }
 
     /**
@@ -277,6 +330,8 @@ export class VoedselpakketManager {
             $input.val(1);
             val = 1;
         }
+
+        this.validateRow($input.closest('.product-row'));
     }
 
     /**

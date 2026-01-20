@@ -134,7 +134,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                                Geen pakketten gevonden
+                                                Er zijn op dit moment geen voedselpakketten
                                             </td>
                                         </tr>
                                     @endforelse

@@ -122,7 +122,7 @@ class VoedselpakketController extends Controller
             $productMap[$ap->id] = $ap;
         }
 
-        foreach($validatedData['producten'] as $prod){
+        foreach($validatedData['producten'] as $index => $prod){
             $pid = $prod['product_id'];
             $requestedQty = $prod['aantal'];
 
@@ -130,16 +130,23 @@ class VoedselpakketController extends Controller
             if(!isset($productMap[$pid])){
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['producten' => "Product ID $pid is niet toegestaan voor deze klant (mogelijk allergie of niet in assortiment)."]);
+                    ->withErrors([
+                        'producten' => "Product ID $pid is niet toegestaan voor deze klant.",
+                        "producten.$index" => 'Niet toegestaan'
+                    ]);
             }
 
             // Check 2: Is er genoeg voorraad?
             $stock = $productMap[$pid]->aantal_voorraad ?? 0;
             if($requestedQty > $stock){
-                $name = $productMap[$pid]->naam ?? "Product $pid";
+                // SP returns 'product_naam', not 'naam'
+                $name = $productMap[$pid]->product_naam ?? $productMap[$pid]->naam ?? "Product $pid";
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['producten' => "Onvoldoende voorraad voor '$name'. Gevraagd: $requestedQty, Beschikbaar: $stock."]);
+                    ->withErrors([
+                        'producten' => "Onvoldoende voorraad voor '$name'. Gevraagd: $requestedQty, Beschikbaar: $stock.",
+                        "producten.$index" => 'Onvoldoende voorraad'
+                    ]);
             }
         }
 

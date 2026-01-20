@@ -14,9 +14,10 @@ BEGIN
         ,vpkt.klant_id
         ,vpkt.pakketnummer
         ,vpkt.datum_uitgifte
-        ,klnt.naam
+        ,klnt.naam AS naam
         ,gzn.gezins_naam
         ,COUNT(vdpr.id) AS producten_totaal
+        ,vpkt.datum_samenstelling
     FROM
         voedselpakketten vpkt
     JOIN
@@ -31,10 +32,10 @@ BEGIN
         vpkt.id
         ,vpkt.klant_id
         ,vpkt.pakketnummer
+        ,vpkt.datum_uitgifte
+        ,vpkt.datum_samenstelling
         ,klnt.naam
         ,gzn.gezins_naam;
 END$$
 
 DELIMITER ;
-
-CALL SP_GetVoedselpakketById(1);
