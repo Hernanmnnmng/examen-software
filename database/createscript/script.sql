@@ -29,7 +29,7 @@ DROP TABLE IF EXISTS
     Adressen,
     Users,
     Roles;
-
+    
 DROP TABLE IF EXISTS
     voedselpakket_producten,
     voedselpakketten,
@@ -258,7 +258,6 @@ CREATE TABLE levering_producten (
 
 CREATE TABLE voedselpakketten (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  pakketnummer CHAR(12) NOT NULL UNIQUE,
   klant_id INT UNSIGNED NOT NULL,
   datum_samenstelling DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   datum_uitgifte DATETIME(6) NULL,
@@ -400,10 +399,10 @@ INSERT INTO leveringen (id, leverancier_id, leverdatum_tijd, eerstvolgende_lever
 INSERT INTO levering_producten (levering_id, product_id, aantal) VALUES
 (1, 1, 100), (2, 2, 200), (2, 3, 50), (3, 6, 100);
 
-INSERT INTO voedselpakketten (id, klant_id, pakketnummer, datum_samenstelling, datum_uitgifte) VALUES
-(1, 1, 'vp0000000001', '2023-10-05 09:00:00', '2023-10-05 16:00:00'),
-(2, 2, 'vp0000000002','2023-10-05 09:15:00', NULL),
-(3, 3, 'vp0000000003','2023-10-05 09:30:00', NULL);
+INSERT INTO voedselpakketten (id, klant_id, datum_samenstelling, datum_uitgifte) VALUES
+(1, 1, '2023-10-05 09:00:00', '2023-10-05 16:00:00'),
+(2, 2, '2023-10-05 09:15:00', NULL),
+(3, 3, '2023-10-05 09:30:00', NULL);
 
 INSERT INTO voedselpakket_producten (voedselpakket_id, product_id, aantal) VALUES
 (1, 1, 1), (1, 2, 1), (1, 6, 1),

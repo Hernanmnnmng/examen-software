@@ -13,34 +13,34 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user if it doesn't exist
-        User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+        // Create Directie (Admin) user
+        User::updateOrCreate(
+            ['email' => 'admin@test.com'],
             [
-                'name' => 'Admin User',
-                'password' => Hash::make('password'),
+                'name' => 'Admin Test Account',
+                'password' => Hash::make('password123'),
                 'role' => 'Directie',
                 'email_verified_at' => now(),
             ]
         );
 
-        // Create worker user if it doesn't exist
-        User::firstOrCreate(
-            ['email' => 'worker@example.com'],
+        // Create Magazijnmedewerker (Worker) user
+        User::updateOrCreate(
+            ['email' => 'worker@test.com'],
             [
-                'name' => 'Worker User',
-                'password' => Hash::make('password'),
+                'name' => 'Worker Test Account',
+                'password' => Hash::make('password123'),
                 'role' => 'Magazijnmedewerker',
                 'email_verified_at' => now(),
             ]
         );
 
-        // Create regular user if it doesn't exist
-        User::firstOrCreate(
-            ['email' => 'user@example.com'],
+        // Create Vrijwilliger (Volunteer/User) user
+        User::updateOrCreate(
+            ['email' => 'volunteer@test.com'],
             [
-                'name' => 'Regular User',
-                'password' => Hash::make('password'),
+                'name' => 'Volunteer Test Account',
+                'password' => Hash::make('password123'),
                 'role' => 'Vrijwilliger',
                 'email_verified_at' => now(),
             ]
