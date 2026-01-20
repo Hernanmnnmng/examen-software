@@ -45,7 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Vrijwilliger')
         ->name('voedselpakketten.show');
 
-    Route::PUT('/voedselpakketten', [VoedselpakketController::class, 'store'])
+    Route::post('/voedselpakketten', [VoedselpakketController::class, 'store'])
         ->middleware('role:Vrijwilliger')
         ->name('voedselpakketten.store');
 
