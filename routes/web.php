@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\leveranciersController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
         ->middleware('role:Directie')
         ->name('dashboard.admin');
+
+    Route::get('/admin/leveranciers', [leveranciersController::class, 'index'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.index');
 
     Route::get('/dashboard/worker', [DashboardController::class, 'worker'])
         ->middleware('role:Magazijnmedewerker')
