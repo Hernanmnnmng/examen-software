@@ -12,7 +12,8 @@ class leveranciersController extends Controller
      */
     public function index()
     {
-        $leveranciers = Leverancier::SP_GetAllLeveranciers();
+        // Only show active suppliers (soft-deleted suppliers are hidden)
+        $leveranciers = Leverancier::GetActiveLeveranciers();
         $leveringen = Leverancier::SP_GetAllLeveringen();
         
         // dd($leveringen);
@@ -58,6 +59,17 @@ class leveranciersController extends Controller
                 'error', 'leverancier niet succesvol toegevoegd'
             );
         }
+    }
+
+    public function softDeleteLeverancier(string $id)
+    {
+        $affected = Leverancier::SoftDeleteLeverancierById((int) $id);
+
+        if ($affected > 0) {
+            return redirect()->back()->with('success', 'leverancier succesvol verwijderd');
+        }
+
+        return redirect()->back()->with('error', 'leverancier niet gevonden of al verwijderd');
     }
 
     /**

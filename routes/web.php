@@ -39,6 +39,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Directie')
         ->name('leveranciers.storeLevering');
 
+    Route::delete('/admin/leveranciers/{id}', [leveranciersController::class, 'softDeleteLeverancier'])
+        ->middleware('role:Directie')
+        ->name('leveranciers.softDelete');
+
     // levering & leverancier routes eind
 
     Route::get('/dashboard/worker', [DashboardController::class, 'worker'])

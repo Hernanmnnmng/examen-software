@@ -123,7 +123,17 @@
                                     </p>
                                 </div>
                             </div>
-                            ✏️
+                            <form method="POST" action="{{ route('leveranciers.softDelete', $leverancier->id) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button
+                                    type="submit"
+                                    class="text-red-600 hover:text-red-500"
+                                    onclick="return confirm('Weet je zeker dat je deze leverancier wilt verwijderen?')"
+                                    title="Verwijderen">
+                                    🗑️
+                                </button>
+                            </form>
                         </div>
 
                         <div class="text-sm space-y-1 text-gray-700 dark:text-gray-300">
