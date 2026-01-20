@@ -189,7 +189,7 @@ class leveranciersController extends Controller
 
         // Check of leverancier nog actief is
         $id = $data['leverancier_id'];
-        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
         
         // Als actief, SP uitvoeren om levering te updaten
         if($checkIsActief) {

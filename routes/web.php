@@ -47,7 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Directie')
         ->name('leveranciers.editleverancier');
 
-    Route::put('/admin/leveranciers/{id}', [leveranciersController::class, 'updateleverancier'])
+    Route::put('/admin/leveranciers/{id}/updateleverancier', [leveranciersController::class, 'updateleverancier'])
         ->middleware('role:Directie')
         ->name('leveranciers.updateleverancier');
 
@@ -55,9 +55,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Directie')
         ->name('leveranciers.editlevering');
 
-    Route::put('/admin/leveranciers/{id}', [leveranciersController::class, 'updatelevering'])
+    Route::put('/admin/leveranciers/{id}/updatelevering', [leveranciersController::class, 'updatelevering'])
         ->middleware('role:Directie')
         ->name('leveranciers.updatelevering');
+
 
 
     // levering & leverancier routes eind
