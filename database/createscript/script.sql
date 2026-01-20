@@ -324,7 +324,8 @@ INSERT INTO users (id, role, name, email, password, created_at, updated_at) VALU
 (1, 'Directie', 'Directeur Jan', 'directie@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
 (2, 'Magazijnmedewerker', 'Kees Magazijn', 'magazijnmedewerker@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
 (3, 'Vrijwilliger', 'Marie Vrijwilliger', 'vrijwilliger@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(4, 'Vrijwilliger', 'Piet Vrijwilliger', 'piet@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW());
+(4, 'Vrijwilliger', 'Piet Vrijwilliger', 'piet@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(5, 'Magazijnmedewerker', 'Sara Magazijn', 'sara@voedselbank.nl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW());
 
 INSERT INTO adressen (id, straat, huisnummer, postcode, plaats, is_actief, opmerking) VALUES
 (1, 'Industrieweg', '10', '5256PN', 'Maaskantje', 1, 'Hoofdvestiging leverancier'),
@@ -345,37 +346,43 @@ INSERT INTO wensen (id, omschrijving, is_actief) VALUES
 (1, 'Veganistisch', 1),
 (2, 'Halal', 1),
 (3, 'Geen varkensvlees', 1),
-(4, 'Vegetarisch', 1);
+(4, 'Vegetarisch', 1),
+(5, 'Glutenvrij', 1);
 
 INSERT INTO allergenen (id, naam, is_actief) VALUES
 (1, 'Gluten', 1),
 (2, 'Lactose', 1),
 (3, 'Noten', 1),
-(4, 'Schaaldieren', 1);
+(4, 'Schaaldieren', 1),
+(5, 'Soja', 1);
 
 INSERT INTO contactpersonen (id, contact_naam, email, telefoon, is_actief) VALUES
 (1, 'Bert de Bakker', 'bert@bakkerijbart.nl', '0612345678', 1),
 (2, 'Sven de Boer', 'sven@jumbo.nl', '0687654321', 1),
 (3, 'Boer Harms', 'info@boerharms.nl', '0735555555', 1),
-(4, 'Oud Contact', 'weg@weg.nl', '00000000', 0);
+(4, 'Oud Contact', 'weg@weg.nl', '00000000', 0),
+(5, 'Karin Voorraad', 'karin@voedselbank.nl', '0655555555', 1);
 
 INSERT INTO leveranciers (id, bedrijfsnaam, adres_id, contactpersoon_id, is_actief, opmerking) VALUES
 (1, 'Bakkerij Bart', 2, 1, 1, 'Levert dagelijks brood'),
 (2, 'Supermarkt Jumbo', 1, 2, 1, 'Grote leveringen op maandag'),
 (3, 'Boerderij Harms', 1, 3, 1, 'Verse groenten'),
-(4, 'Slagerij Henk', 2, 1, 0, 'Failliet gegaan');
+(4, 'Slagerij Henk', 2, 1, 0, 'Failliet gegaan'),
+(5, 'Versmarkt Maas', 5, 5, 1, 'Regionale leverancier');
 
 INSERT INTO gezinnen (id, gezins_naam, volwassenen, kinderen, babys, is_actief) VALUES
 (1, 'Fam. Jansen', 1, 0, 0, 1),
 (2, 'Fam. de Vries', 2, 2, 0, 1),
 (3, 'Fam. El Amrani', 2, 3, 1, 1),
-(4, 'Fam. Pietersen', 1, 1, 0, 1);
+(4, 'Fam. Pietersen', 1, 1, 0, 1),
+(5, 'Fam. Kok', 2, 1, 1, 1);
 
 INSERT INTO klanten (id, naam, email, telefoon, adres_id, gezin_id, is_actief) VALUES
 (1, 'Jan Jansen', 'jan@hotmail.com', '0611111111', 3, 1, 1),
 (2, 'Els de Vries', 'els@gmail.com', '0622222222', 4, 2, 1),
 (3, 'Mo El Amrani', 'mo@live.nl', '0633333333', 5, 3, 1),
-(4, 'Petra Pietersen', 'petra@yahoo.com', '0644444444', 3, 4, 1);
+(4, 'Petra Pietersen', 'petra@yahoo.com', '0644444444', 3, 4, 1),
+(5, 'Karin Kok', 'kok@voorbeeld.nl', '0651515151', 6, 5, 1);
 
 INSERT INTO producten (id, product_naam, ean, categorie_id, aantal_voorraad, is_actief) VALUES
 (1, 'Volkoren Brood', '8710400000001', 3, 50, 1),
@@ -387,31 +394,39 @@ INSERT INTO producten (id, product_naam, ean, categorie_id, aantal_voorraad, is_
 (7, 'Oude Kaas', '8710400000007', 2, 0, 1);
 
 INSERT INTO product_kenmerken (product_id, wens_id) VALUES
-(1, 1), (1, 2), (3, 1), (5, 2);
+(1, 1), (1, 2), (3, 1), (5, 2), (2, 4), (4, 5), (6, 2);
 
 INSERT INTO product_allergenen (product_id, allergie_id) VALUES
-(1, 1), (2, 2), (3, 3), (7, 2);
+(1, 1), (2, 2), (3, 3), (7, 2), (2, 5), (5, 2);
 
 INSERT INTO leveringen (id, leverancier_id, leverdatum_tijd, eerstvolgende_levering, is_actief) VALUES
 (1, 1, '2023-10-01 08:00:00', '2023-10-08 08:00:00', 1),
 (2, 2, '2023-10-02 10:00:00', '2023-10-09 10:00:00', 1),
-(3, 3, '2023-10-03 14:00:00', '2023-10-10 14:00:00', 1);
+(3, 3, '2023-10-03 14:00:00', '2023-10-10 14:00:00', 1),
+(4, 4, '2023-10-04 11:00:00', '2023-10-11 11:00:00', 1),
+(5, 5, '2023-10-05 07:30:00', '2023-10-12 07:30:00', 1);
 
 INSERT INTO levering_producten (levering_id, product_id, aantal) VALUES
-(1, 1, 100), (2, 2, 200), (2, 3, 50), (3, 6, 100);
+(1, 1, 100), (2, 2, 200), (2, 3, 50), (3, 6, 100), (3, 2, 120), (4, 5, 80), (4, 4, 60), (5, 6, 90);
 
 INSERT INTO voedselpakketten (id, klant_id, pakketnummer, datum_samenstelling, datum_uitgifte) VALUES
 (1, 1, 'vp0000000001', '2023-10-05 09:00:00', '2023-10-05 16:00:00'),
 (2, 2, 'vp0000000002','2023-10-05 09:15:00', NULL),
-(3, 3, 'vp0000000003','2023-10-05 09:30:00', NULL);
+(3, 3, 'vp0000000003','2023-10-05 09:30:00', NULL),
+(4, 4, 'vp0000000004','2023-10-05 09:45:00', NULL),
+(5, 5, 'vp0000000005','2023-10-05 10:00:00', NULL);
 
 INSERT INTO voedselpakket_producten (voedselpakket_id, product_id, aantal) VALUES
 (1, 1, 1), (1, 2, 1), (1, 6, 1),
 (2, 1, 2), (2, 2, 2), (2, 3, 1), (2, 6, 2),
-(3, 1, 3), (3, 2, 3), (3, 4, 1), (3, 5, 2);
+(3, 1, 3), (3, 2, 3), (3, 4, 1), (3, 5, 2),
+(4, 3, 2), (4, 6, 1),
+(5, 2, 2), (5, 5, 1), (5, 7, 1);
 
-INSERT INTO klant_wensen (klant_id, wens_id) VALUES (3, 2);
-INSERT INTO klant_allergenen (klant_id, allergie_id) VALUES (2, 3);
+INSERT INTO klant_wensen (klant_id, wens_id) VALUES
+(3, 2), (1, 1), (2, 3), (4, 4), (5, 5);
+INSERT INTO klant_allergenen (klant_id, allergie_id) VALUES
+(2, 3), (1, 1), (3, 4), (4, 2), (5, 5);
 
 SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
