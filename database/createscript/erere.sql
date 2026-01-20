@@ -1,3 +1,3 @@
 -- Directie: directie@voedselbank.nl
 -- Magazijnmedewerker: magazijnmedewerker@voedselbank.nl
--- Vrijwilliger: vrijwilliger@voedselbank.nl (or piet@voedselbank.nl)add client-side validation to category name
+-- Vrijwilliger: vrijwilliger@voedselbank.nl e
