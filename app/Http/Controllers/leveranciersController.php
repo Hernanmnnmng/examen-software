@@ -13,7 +13,7 @@ class leveranciersController extends Controller
     public function index()
     {
         // Alleen actieve leveranciers ophalen (soft-deleted leveranciers worden verborgen)
-        $leveranciers = Leverancier::GetActiveLeveranciers();
+        $leveranciers = Leverancier::SP_GetAllLeveranciers();
         $leveringen = Leverancier::SP_GetAllLeveringen();
         
         // dd($leveringen); // debug optie
@@ -81,7 +81,7 @@ class leveranciersController extends Controller
 
         // Check of leverancier nog actief is
         $id = $data['leverancier_id'];
-        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
         
         // Als actief, levering aanmaken via stored procedure
         if($checkIsActief) {
@@ -195,7 +195,7 @@ class leveranciersController extends Controller
         if($checkIsActief) {
             $result = Leverancier::SP_CreateLevering($data);
         } else {
-            return redirect()->back()->with('error', 'de geselecteerde bedrijf is niet meer actief');
+            return redirect()->back()->with('error', 'de leverancier van deze levering is niet meer actief');
         }
 
         // Levering updaten via SP
