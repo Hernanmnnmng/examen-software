@@ -19,7 +19,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bedrijf</label>
-                    <select name="leverancier_id" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select required name="leverancier_id" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         @forelse ($leveranciers as $leverancier)
                             <option value="{{ $leverancier->id }}" @if($leverancier->id == $levering->leverancier_id) selected @endif>
                                 {{ $leverancier->bedrijfsnaam }}
@@ -34,14 +34,14 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Leverdatum & tijd</label>
                     <input type="datetime-local" name="leverdatum_tijd" 
                         value="{{ \Carbon\Carbon::parse($levering->leverdatum_tijd)->format('Y-m-d\TH:i') }}"
-                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Eerstvolgende levering</label>
                     <input type="datetime-local" name="eerstvolgende_levering" 
                         value="{{ \Carbon\Carbon::parse($levering->eerstvolgende_levering)->format('Y-m-d\TH:i') }}"
-                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                 </div>
 
                 <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">

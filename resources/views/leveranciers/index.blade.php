@@ -59,7 +59,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Bedrijfsnaam</label>
-                                    <input type="text" name="bedrijfsnaam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" name="bedrijfsnaam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                             </div>
                         </div>
@@ -69,16 +69,16 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Contactpersoon</label>
-                                    <input type="text" name="contact_naam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" name="contact_naam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                                    <input type="email" name="email" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="email" name="email" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                             </div>
                             <div class="mt-4">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Telefoon</label>
-                                <input type="tel" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <input type="tel" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                             </div>
                         </div>
 
@@ -87,19 +87,19 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Straat</label>
-                                    <input type="text" name="straat" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" name="straat" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Huisnummer</label>
-                                    <input type="text" name="huisnummer" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" name="huisnummer" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Postcode</label>
-                                    <input type="text" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Plaats</label>
-                                    <input type="text" name="plaats" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" name="plaats" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                                 </div>
                             </div>
                         </div>
@@ -228,12 +228,12 @@
 
                         <div>
                             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Leverdatum & tijd</label>
-                            <input type="datetime-local" name="leverdatum_tijd" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                            <input type="datetime-local" name="leverdatum_tijd" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                         </div>
 
                         <div>
                             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Eerstvolgende levering</label>
-                            <input type="datetime-local" name="eerstvolgende_levering" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                            <input type="datetime-local" name="eerstvolgende_levering" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
                         </div>
 
                         <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
