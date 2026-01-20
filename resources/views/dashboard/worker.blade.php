@@ -10,12 +10,12 @@
             <!-- 3x3 Grid of Colored Squares -->
             <div class="grid grid-cols-3 gap-4" style="display: grid; grid-template-columns: repeat(3, 1fr);">
                 <!-- Tile 1 -->
-                <a href="#" class="aspect-square bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex flex-col items-center justify-center text-white relative">
+                <a href="{{ route('voorraad.producten.index') }}" class="aspect-square bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex flex-col items-center justify-center text-white">
                     <svg class="h-20 w-20 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0H4m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 13h8M8 17h5" />
                     </svg>
-                    <h3 class="text-lg font-bold text-center">My Tasks</h3>
-                    <p class="text-sm text-center opacity-90 mt-1">0</p>
+                    <h3 class="text-lg font-bold text-center">Voorraad</h3>
                 </a>
 
                 <!-- Tile 2 -->

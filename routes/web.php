@@ -11,13 +11,14 @@ Route::get('/', function () {
 });
 
 // Role-based dashboards
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
         return match($user->role) {
             'Directie' => redirect()->route('dashboard.admin'),
             'Magazijnmedewerker' => redirect()->route('dashboard.worker'),
             'Vrijwilliger' => redirect()->route('dashboard.user'),
+            default => redirect()->route('dashboard.user'),
         };
     })->name('dashboard');
 
@@ -88,3 +89,8 @@ Route::middleware(['auth', 'role:Directie'])->prefix('admin')->name('admin.')->g
 });
 
 require __DIR__.'/auth.php';
+
+// Load modular route files (merge-friendly: teammates add files, no web.php edits)
+foreach (glob(__DIR__.'/modules/*.php') as $routeFile) {
+    require $routeFile;
+}
