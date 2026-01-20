@@ -23,9 +23,9 @@
                     <div>
                         <select name="role" class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             <option value="">All Roles</option>
-                            <option value="admin" {{ $currentRole === 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="worker" {{ $currentRole === 'worker' ? 'selected' : '' }}>Worker</option>
-                            <option value="user" {{ $currentRole === 'user' ? 'selected' : '' }}>User</option>
+                            <option value="Directie" {{ $currentRole === 'Directie' ? 'selected' : '' }}>Directie</option>
+                            <option value="Magazijnmedewerker" {{ $currentRole === 'Magazijnmedewerker' ? 'selected' : '' }}>Magazijnmedewerker</option>
+                            <option value="Vrijwilliger" {{ $currentRole === 'Vrijwilliger' ? 'selected' : '' }}>Vrijwilliger</option>
                         </select>
                     </div>
                     <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
@@ -75,10 +75,10 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $user->role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                {{ $user->role === 'worker' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '' }}
-                                                {{ $user->role === 'user' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}">
-                                                {{ ucfirst($user->role) }}
+                                                {{ $user->role === 'Directie' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
+                                                {{ $user->role === 'Magazijnmedewerker' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '' }}
+                                                {{ $user->role === 'Vrijwilliger' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}">
+                                                {{ $user->role }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
