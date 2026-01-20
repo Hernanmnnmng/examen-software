@@ -31,6 +31,12 @@
                     <x-nav-link :href="route($dashboardRoute)" :active="request()->routeIs(['dashboard', 'dashboard.admin', 'dashboard.worker', 'dashboard.user'])">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(Auth::user()->role === 'Vrijwilliger')
+                        <x-nav-link :href="route('voedselpakketten.index')" :active="request()->routeIs('voedselpakketten.*')">
+                            {{ __('Voedselpakketten') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -94,6 +100,12 @@
             <x-responsive-nav-link :href="route($dashboardRoute)" :active="request()->routeIs(['dashboard', 'dashboard.admin', 'dashboard.worker', 'dashboard.user'])">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(Auth::user()->role === 'Vrijwilliger')
+                <x-responsive-nav-link :href="route('voedselpakketten.index')" :active="request()->routeIs('voedselpakketten.*')">
+                    {{ __('Voedselpakketten') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
