@@ -4,6 +4,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\leveranciersController;
+use App\Http\Controllers\VoedselpakketController;
+use App\Http\Middleware\EnsureUserHasAnyRole;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'storeLeverancier'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLeverancier');
-    
+
     Route::post('/admin/leveranciers/nieuwlevering', [leveranciersController::class, 'storeLevering'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLevering');
@@ -69,43 +71,43 @@ Route::middleware(['auth'])->group(function () {
     // levering & leverancier routes eind
 
     Route::get('/dashboard/worker', [DashboardController::class, 'worker'])
-        ->middleware('role:Magazijnmedewerker')
+        ->middleware(EnsureUserHasAnyRole::class.':Magazijnmedewerker,Directie')
         ->name('dashboard.worker');
 
     Route::get('/dashboard/user', [DashboardController::class, 'user'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('dashboard.user');
 
     Route::get('/voedselpakketten', [VoedselpakketController::class, 'index'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.index');
 
     Route::get('/voedselpakketten/create', [VoedselpakketController::class, 'create'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.create');
 
     Route::get('/voedselpakketten/{voedselpakketid}', [VoedselpakketController::class, 'show'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.show');
 
     Route::post('/voedselpakketten', [VoedselpakketController::class, 'store'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.store');
 
     Route::delete('/voedselpakketten/{voedselpakketid}', [VoedselpakketController::class, 'destroy'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.destroy');
 
     Route::post('/voedselpakketten/{voedselpakketid}/deliver', [VoedselpakketController::class, 'deliver'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.deliver');
 
     Route::get('/voedselpakketten/{voedselpakketid}/edit', [VoedselpakketController::class, 'edit'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.edit');
 
     Route::post('/voedselpakketten/{voedselpakketid}/update', [VoedselpakketController::class, 'update'])
-        ->middleware('role:Vrijwilliger')
+        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
         ->name('voedselpakketten.update');
 
     Route::get('/voedselpakketten/producten/{id}', [VoedselpakketController::class, 'getproducten'])

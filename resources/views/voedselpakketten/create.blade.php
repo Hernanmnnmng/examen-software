@@ -25,7 +25,7 @@
                     <form method="POST" action="{{ route('voedselpakketten.store') }}" class="space-y-6">
                         @csrf
 
-                        <!-- Klant Selectie -->
+                        <!-- Klant Selectie wijzen-->
                         <div>
                             <label for="klant_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Klant</label>
                             <select id="klant_id" name="klant_id" required class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
