@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Voorraad;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\ProductCategorie;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,7 +61,10 @@ class ProductController extends Controller
 
             if (empty($producten)) {
                 // SQLite/testing fallback OR MySQL fallback when SP is missing.
-                $query = DB::table('producten as p')
+                // Use Eloquent model as the query base (exam requirement: model usage),
+                // while keeping the exact same shape expected by the Blade views.
+                $query = Product::query()
+                    ->from('producten as p')
                     ->join('product_categorieen as c', 'c.id', '=', 'p.categorie_id')
                     ->select([
                         'p.id',
@@ -133,15 +138,13 @@ class ProductController extends Controller
                     (int) $validated['aantal_voorraad'],
                 ]);
             } else {
-                // SQLite/testing fallback
-                DB::table('producten')->insert([
+                // SQLite/testing fallback (Eloquent model)
+                Product::query()->create([
                     'product_naam' => $validated['product_naam'],
                     'ean' => $validated['ean'],
                     'categorie_id' => (int) $validated['categorie_id'],
                     'aantal_voorraad' => (int) $validated['aantal_voorraad'],
                     'is_actief' => 1,
-                    'datum_aangemaakt' => now(),
-                    'datum_gewijzigd' => now(),
                 ]);
             }
 
@@ -171,7 +174,7 @@ class ProductController extends Controller
             $rows = DB::select('CALL sp_product_get(?)', [$id]);
             $product = $rows[0] ?? null;
         } else {
-            $product = DB::table('producten')->where('id', $id)->first();
+            $product = Product::query()->where('id', $id)->first();
         }
 
         abort_if(! $product, 404);
@@ -204,13 +207,12 @@ class ProductController extends Controller
                     (int) $validated['aantal_voorraad'],
                 ]);
             } else {
-                // SQLite/testing fallback
-                DB::table('producten')->where('id', $id)->update([
+                // SQLite/testing fallback (Eloquent model)
+                Product::query()->where('id', $id)->update([
                     'product_naam' => $validated['product_naam'],
                     'ean' => $validated['ean'],
                     'categorie_id' => (int) $validated['categorie_id'],
                     'aantal_voorraad' => (int) $validated['aantal_voorraad'],
-                    'datum_gewijzigd' => now(),
                 ]);
             }
 
@@ -250,7 +252,7 @@ class ProductController extends Controller
                     }
                 }
 
-                DB::table('producten')->where('id', $id)->delete();
+                Product::query()->where('id', $id)->delete();
             }
 
             return redirect()
@@ -287,11 +289,10 @@ class ProductController extends Controller
             }
         }
 
-        return DB::table('product_categorieen')
-            ->select(['id', 'naam'])
-            ->where('is_actief', '=', 1)
+        return ProductCategorie::query()
+            ->active()
             ->orderBy('naam', 'asc')
-            ->get();
+            ->get(['id', 'naam']);
     }
 
     /**
