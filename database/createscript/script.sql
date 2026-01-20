@@ -405,10 +405,10 @@ INSERT INTO voedselpakketten (id, klant_id, pakketnummer, datum_samenstelling, d
 (2, 2, 'vp0000000002','2023-10-05 09:15:00', NULL),
 (3, 3, 'vp0000000003','2023-10-05 09:30:00', NULL);
 
-INSERT INTO voedselpakket_producten (voedselpakket_id, product_id, aantal) VALUES
-(1, 1, 1), (1, 2, 1), (1, 6, 1),
-(2, 1, 2), (2, 2, 2), (2, 3, 1), (2, 6, 2),
-(3, 1, 3), (3, 2, 3), (3, 4, 1), (3, 5, 2);
+-- INSERT INTO voedselpakket_producten (voedselpakket_id, product_id, aantal) VALUES
+-- (1, 1, 1), (1, 2, 1), (1, 6, 1),
+-- (2, 1, 2), (2, 2, 2), (2, 3, 1), (2, 6, 2),
+-- (3, 1, 3), (3, 2, 3), (3, 4, 1), (3, 5, 2);
 
 INSERT INTO klant_wensen (klant_id, wens_id) VALUES (3, 2);
 INSERT INTO klant_allergenen (klant_id, allergie_id) VALUES (2, 3);
