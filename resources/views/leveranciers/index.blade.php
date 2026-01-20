@@ -45,20 +45,6 @@
                             <p>📧 {{ $leverancier->email }}</p>
                             <p>📞 {{ $leverancier->telefoon }}</p>
                         </div>
-
-                        <div
-                            class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700 text-sm">
-                            <span>📅 Eerstvolgende levering</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-600 dark:text-gray-400">
-                                    ma 20 jan · 10:00
-                                </span>
-                                <span
-                                    class="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">
-                                    Gepland
-                                </span>
-                            </div>
-                        </div>
                     </div>
                 @empty
                     leeg
