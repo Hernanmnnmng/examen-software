@@ -9,8 +9,8 @@ CREATE PROCEDURE SP_GetAllKlanten(
 )
 BEGIN
     SELECT
-         klnt.id AS klantid
-        -- ,klnt.naam
+         klnt.id
+        ,klnt.naam
         ,gzn.gezins_naam
         ,gzn.volwassenen
         ,gzn.kinderen

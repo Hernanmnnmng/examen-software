@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\VoedselpakketController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,6 +32,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/user', [DashboardController::class, 'user'])
         ->middleware('role:Vrijwilliger')
         ->name('dashboard.user');
+
+    Route::get('/voedselpakketten', [VoedselpakketController::class, 'index'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.index');
+    Route::get('/voedselpakketten/{voedselpakketid}', [VoedselpakketController::class, 'show'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.show');
+
+    Route::PUT('/voedselpakketten', [VoedselpakketController::class, 'store'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.store');
+
+    Route::delete('/voedselpakketten/{voedselpakketid}', [VoedselpakketController::class, 'destroy'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.destroy');
+
+    Route::get('/voedselpakketten/{voedselpakketid}/edit', [VoedselpakketController::class, 'edit'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.edit');
+
+    Route::post('/voedselpakketten/{voedselpakketid}/update', [VoedselpakketController::class, 'update'])
+        ->middleware('role:Vrijwilliger')
+        ->name('voedselpakketten.update');
+
+    Route::get('/voedselpakketten/producten/{id}', [VoedselpakketController::class, 'getproducten'])
+        ->name('voedselpakketten.producten');
 });
 
 Route::middleware('auth')->group(function () {

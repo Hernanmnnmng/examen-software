@@ -1,16 +1,17 @@
 USE Voedselbank;
 
 -- Verwijder bestaande procedure
-DROP PROCEDURE IF EXISTS SP_GetAllVoedselpakkettenById;
+DROP PROCEDURE IF EXISTS SP_GetVoedselpakketById;
 
 DELIMITER $$
 
-CREATE PROCEDURE SP_GetAllVoedselpakkettenById(
-    IN klantid INT
+CREATE PROCEDURE SP_GetVoedselpakketById(
+    IN id INT
 )
 BEGIN
     SELECT
         vpkt.id
+        ,vpkt.klant_id
         ,vpkt.pakketnummer
         ,klnt.naam
         ,gzn.gezins_naam
@@ -24,15 +25,10 @@ BEGIN
     JOIN
         voedselpakket_producten vdpr ON vdpr.voedselpakket_id = vpkt.id
     WHERE
-        klnt.id = klantid
-    GROUP BY
-        vpkt.id
-        ,vpkt.pakketnummer
-        ,klnt.naam
-        ,gzn.gezins_naam
+        vpkt.id = id
     ORDER BY vpkt.id DESC;
 END$$
 
 DELIMITER ;
 
-CALL SP_GetAllVoedselpakkettenById(1);
+CALL SP_GetVoedselpakketById(1);

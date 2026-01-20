@@ -5,23 +5,22 @@ DROP PROCEDURE IF EXISTS SP_GetAllVoedselpakketen;
 
 DELIMITER $$
 
-CREATE PROCEDURE SP_GetAllVoedselpakketen(
-
-)
+CREATE PROCEDURE SP_GetAllVoedselpakketen()
 BEGIN
     SELECT
         vpkt.id
         ,vpkt.pakketnummer
         ,klnt.naam
         ,gzn.gezins_naam
-        ,COUNT(vdpr.id) AS producten_totaal
+        ,COALESCE(COUNT(vdpr.id), 0) AS producten_totaal
+        ,vpkt.datum_uitgifte
     FROM
         voedselpakketten vpkt
     JOIN
         klanten klnt ON vpkt.klant_id = klnt.id
     JOIN
         gezinnen gzn ON klnt.gezin_id = gzn.id
-    JOIN
+    LEFT JOIN -- toont dan ook de voedselpakketen zonder producten
         voedselpakket_producten vdpr ON vdpr.voedselpakket_id = vpkt.id
     GROUP BY
         vpkt.id

@@ -10,7 +10,7 @@ CREATE PROCEDURE SP_GetKlantById(
 )
 BEGIN
     SELECT
-         klnt.id AS klantid
+         klnt.id
         ,klnt.naam
         ,gzn.gezins_naam
         ,gzn.volwassenen

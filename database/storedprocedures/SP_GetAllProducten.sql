@@ -61,3 +61,5 @@ END$$
 DELIMITER ;
 
 CALL SP_GetAllProducten(1);
+CALL SP_GetAllProducten(2);
+CALL SP_GetAllProducten(3);
