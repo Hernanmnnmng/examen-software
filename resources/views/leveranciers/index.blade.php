@@ -166,7 +166,7 @@
                         </div>
                     </div>
                 @empty
-                    leeg
+                    Er zijn momenteel nog geen leveranciers geregistreerd.
                 @endforelse
             </div>
 
