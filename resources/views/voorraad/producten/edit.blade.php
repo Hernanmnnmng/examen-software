@@ -11,10 +11,19 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Product wijzigen') }}
             </h2>
-            <a href="{{ route('voorraad.producten.index') }}"
-               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Terug
-            </a>
+            <div class="flex items-center gap-2">
+                @if(auth()->user()->role === 'Directie')
+                    <a href="{{ route('voorraad.categorieen.index') }}"
+                       class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        Categorieën
+                    </a>
+                @endif
+
+                <a href="{{ route('voorraad.producten.index') }}"
+                   class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Terug
+                </a>
+            </div>
         </div>
     </x-slot>
 
