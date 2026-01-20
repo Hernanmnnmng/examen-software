@@ -12,12 +12,13 @@ class leveranciersController extends Controller
      */
     public function index()
     {
-        // Only show active suppliers (soft-deleted suppliers are hidden)
+        // Alleen actieve leveranciers ophalen (soft-deleted leveranciers worden verborgen)
         $leveranciers = Leverancier::GetActiveLeveranciers();
         $leveringen = Leverancier::SP_GetAllLeveringen();
         
-        // dd($leveringen);
+        // dd($leveringen); // debug optie
 
+        // View laden met alle leveranciers en leveringen
         return view('leveranciers.index', [
             'leveranciers' => $leveranciers,
             'leveringen' => $leveringen
@@ -26,7 +27,7 @@ class leveranciersController extends Controller
 
     public function storeLeverancier(Request $request) 
     {  
-        // data 
+        // Data valideren van formulier input
         $data = $request->validate([
              'bedrijfsnaam'  =>  'required'
             ,'straat'        =>  'required'
@@ -38,11 +39,17 @@ class leveranciersController extends Controller
             ,'telefoon'      =>  'required'
         ]);
 
+        // Bedrijfsnaam apart opslaan voor check
         $name = $data['bedrijfsnaam'];
+
+        // Checken of de bedrijfsnaam al bestaat via stored procedure
         $checkNameExists = Leverancier::SP_GetLeverancierByBedrijfsnaam($name);
 
+        // Resultaat in $count zetten (0 = bestaat niet, >0 = bestaat)
         $count = $checkNameExists[0]->totaal ?? 0;
 
+        // Als naam al bestaat, terug met foutmelding
+        // Zo niet, leverancier aanmaken
         if ($count > 0) {
             return redirect()->back()->with(
                 'error', 'deze leverancier bestaat al'
@@ -51,6 +58,7 @@ class leveranciersController extends Controller
             $result = Leverancier::SP_CreateNewLeverancier($data);
         }
 
+        // Meldingen geven op basis van resultaat
         if($result) {
             return redirect()->back()->with(
                 'success', 'leverancier succesvol toegevoegd'
@@ -64,21 +72,26 @@ class leveranciersController extends Controller
 
     public function storeLevering(Request $request)
     {
+        // Data valideren van levering formulier
         $data = $request->validate([
             'leverancier_id'         => 'required|integer',
             'leverdatum_tijd'        => 'required',
             'eerstvolgende_levering' => 'required'
         ]);
 
+        // Check of leverancier nog actief is
         $id = $data['leverancier_id'];
         $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
         
+        // Als actief, levering aanmaken via stored procedure
         if($checkIsActief) {
             $result = Leverancier::SP_CreateLevering($data);
         } else {
+            // Foutmelding als leverancier niet actief is
             return redirect()->back()->with('error', 'de geselecteerde bedrijf is niet meer actief');
         }
 
+        // Succes/foutmelding tonen aan gebruiker
         if($result) {
             return redirect()->back()->with('success', 'Levering succesvol toegevoegd');
         } else {
@@ -86,17 +99,19 @@ class leveranciersController extends Controller
         }
     }
 
-
     public function softDeleteLeverancier(string $id)
     {
+        // Soft-delete uitvoeren op leverancier
         $affected = Leverancier::SoftDeleteLeverancierById((int) $id);
 
+        // Succes/foutmelding tonen
         if ($affected > 0) {
             return redirect()->back()->with('success', 'leverancier succesvol verwijderd');
         }
 
         return redirect()->back()->with('error', 'leverancier niet gevonden of al verwijderd');
     }
+
     /**
      * Display the specified resource.
      */
@@ -105,27 +120,35 @@ class leveranciersController extends Controller
         //
     }
 
+    // Pagina laden om leverancier te bewerken
     public function editleverancier($id)
     {
         $leverancier = Leverancier::SP_GetLeverancierById($id);
 
+        // Checken of leverancier bestaat
         if(!$leverancier) {
             return redirect()->route('leveranciers.index')->with('error', 'Leverancier niet gevonden.');
         }
 
+        // Edit view laden
         return view('leveranciers.editleverancier', compact('leverancier'));
     }
 
+    // Leverancier updaten
     public function updateleverancier(Request $request, $id)
     {
+        // Input valideren
         $data = $request->validate([
             'bedrijfsnaam' => 'required'
         ]);
 
+        // id toevoegen aan data array
         $data['id'] = $id;
 
+        // SP uitvoeren om leverancier te updaten
         $updated = Leverancier::SP_UpdateLeverancier($data);
 
+        // Succes/foutmelding teruggeven
         if($updated) {
             return redirect()->route('leveranciers.index')->with('success', 'Leverancier succesvol geüpdatet.');
         } else {
@@ -133,41 +156,52 @@ class leveranciersController extends Controller
         }
     }
 
+    // Pagina laden om levering te bewerken
     public function editLevering($id)
     {
+        // Huidige levering ophalen
         $levering = Leverancier::SP_GetLeveringById($id);
+        // Alle leveranciers ophalen voor select dropdown
         $leveranciers = Leverancier::SP_GetAllLeveranciers();
 
+        // Checken of levering bestaat
         if (!$levering) {
             return redirect()->route('leveranciers.index')
                 ->with('error', 'Levering niet gevonden');
         }
 
+        // Edit view laden
         return view('leveranciers.editlevering', [
             'levering' => $levering,
             'leveranciers' => $leveranciers
         ]);
     }
 
+    // Levering updaten
     public function updateLevering(Request $request, $id)
     {
+        // Input valideren
         $data = $request->validate([
             'leverdatum_tijd' => 'required|date',
             'eerstvolgende_levering' => 'required|date',
             'leverancier_id' => 'required|integer'
         ]);
 
+        // Check of leverancier nog actief is
         $id = $data['leverancier_id'];
         $checkIsActief = Leverancier::SP_CheckIfBedrijfIsAciefById($id);
         
+        // Als actief, SP uitvoeren om levering te updaten
         if($checkIsActief) {
             $result = Leverancier::SP_CreateLevering($data);
         } else {
             return redirect()->back()->with('error', 'de geselecteerde bedrijf is niet meer actief');
         }
 
+        // Levering updaten via SP
         $result = Leverancier::SP_UpdateLevering($id, $data);
 
+        // Succes/foutmelding teruggeven
         if ($result) {
             return redirect()->route('leveranciers.index')
                 ->with('success', 'Levering succesvol bijgewerkt');
