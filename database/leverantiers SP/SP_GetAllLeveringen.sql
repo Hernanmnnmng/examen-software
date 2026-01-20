@@ -5,6 +5,7 @@ CREATE PROCEDURE SP_GetAllLeveringen()
 BEGIN
     SELECT 
         lvng.id,
+        lvng.is_actief,
         lvrn.bedrijfsnaam,
         cprs.contact_naam,
         lvng.eerstvolgende_levering

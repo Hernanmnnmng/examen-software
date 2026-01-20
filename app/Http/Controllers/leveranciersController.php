@@ -112,6 +112,19 @@ class leveranciersController extends Controller
         return redirect()->back()->with('error', 'leverancier niet gevonden of al verwijderd');
     }
 
+    public function softDeleteLevering(string $id)
+    {
+        // Soft-delete uitvoeren op leverancier
+        $affected = Leverancier::SoftDeleteLeveringById((int) $id);
+
+        // Succes/foutmelding tonen
+        if ($affected > 0) {
+            return redirect()->back()->with('success', 'levering succesvol verwijderd');
+        }
+
+        return redirect()->back()->with('error', 'levering niet gevonden of al verwijderd');
+    }
+
     /**
      * Display the specified resource.
      */

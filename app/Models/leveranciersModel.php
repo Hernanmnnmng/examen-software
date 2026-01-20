@@ -158,6 +158,25 @@ class leveranciersModel extends Model
           }
      }
 
+     static public function SoftDeleteLeveringById(int $id): int
+     {
+          try {
+               // log begin
+               Log::info('SoftDeleteLeveringById gestart', ['id' => $id]);
+               // resultaten in $result zetten
+               $result = DB::update('UPDATE leveringen SET is_actief = 0 WHERE id = ?', [$id]);
+               // log success
+               Log::info('SoftDeleteLeveringById succesvol uitgevoerd');
+               // result terug geven
+               return $result;
+          } catch (\Throwable $e) {
+               //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+               Log::error('Fout in SoftDeleteLeveringById', ['error' => $e->getMessage()]);
+               // leeg terug geven zodat de app niet kapot gaat
+               return 0;
+          }
+     }
+
      static public function SP_CheckIfBedrijfIsActiefById($id): bool
      {
           try {

@@ -129,7 +129,7 @@
                                 </div>
                             </div>
                             <a href="{{ route('leveranciers.editleverancier', $id = $leverancier->id) }}">bijwerken</a>
-                            <form method="POST" action="{{ route('leveranciers.softDelete', $leverancier->id) }}">
+                            <form method="POST" action="{{ route('leveranciers.softDeleteleverancier', $leverancier->id) }}">
                                 @csrf
                                 @method('DELETE')
                                 <button
@@ -236,7 +236,9 @@
                             <th class="px-6 py-3">Leverancier</th>
                             <th class="px-6 py-3">Contactpersoon</th>
                             <th class="px-6 py-3">Volgende levering</th>
-                            <th class="px-6 py-3">Acties</th>
+                            <th class="px-6 py-3">Bijwerken</th>
+                            <th class="px-6 py-3">Verwijderen</th>
+                            <th class="px-6 py-3">status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -249,9 +251,28 @@
                                 ?>
                                 <td class="px-6 py-4">{{ $formattedDate }}</td>
                                 <td><a href="{{ route('leveranciers.editlevering', $id = $levering->id) }}">bijwerken</a></td>
+                                <td>
+                                    <form method="POST" action="{{ route('leveranciers.softDeletelevering', $levering->id) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="submit"
+                                        class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                        onclick="return confirm('Weet je zeker dat je deze leverancier wilt verwijderen?')"
+                                        title="Verwijderen">
+                                        Verwijderen
+                                    </button>
+                                </form>  
+                                </td>
+                                <td class="px-6 py-4 font-semibold
+                                    {{ $levering->is_actief ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $levering->is_actief ? 'Actief' : 'Inactief' }}
+                                </td>
                             </tr>
                         @empty
-                            <tr>Er zijn momenteel nog geen leveringen gemaakt.</tr>
+                            <tr>
+                                <td>Er zijn momenteel nog geen leveringen gemaakt.</td>
+                            </tr>
                         @endforelse
 
                     </tbody>
