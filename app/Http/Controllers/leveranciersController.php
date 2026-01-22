@@ -12,10 +12,9 @@ class leveranciersController extends Controller
      */
     public function index()
     {
-        // Alle leveranciers ophalen (actief + niet-actief).
-        $leveranciers = Leverancier::GetAllLeveranciers();
-        // Alle leveringen ophalen (actief + niet-actief).
-        $leveringen = Leverancier::GetAllLeveringen();
+        // Alleen actieve leveranciers ophalen (soft-deleted leveranciers worden verborgen)
+        $leveranciers = Leverancier::SP_GetAllLeveranciers();
+        $leveringen = Leverancier::SP_GetAllLeveringen();
         
         // dd($leveringen); // debug optie
 
@@ -24,11 +23,6 @@ class leveranciersController extends Controller
             'leveranciers' => $leveranciers,
             'leveringen' => $leveringen
         ]);
-    }
-
-    public function createLeverancier()
-    {
-        return view('leveranciers.createleverancier');
     }
 
     public function storeLeverancier(Request $request) 
@@ -66,14 +60,13 @@ class leveranciersController extends Controller
 
         // Meldingen geven op basis van resultaat
         if($result) {
-            return redirect()
-                ->route('leveranciers.index')
-                ->with('success', 'leverancier succesvol toegevoegd');
+            return redirect()->back()->with(
+                'success', 'leverancier succesvol toegevoegd'
+            );
         } else {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'leverancier niet succesvol toegevoegd');
+            return redirect()->back()->with(
+                'error', 'leverancier niet succesvol toegevoegd'
+            );
         }
     }
 
@@ -157,22 +150,6 @@ class leveranciersController extends Controller
     // Leverancier updaten
     public function updateleverancier(Request $request, $id)
     {
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H1',
-                'location' => 'leveranciersController.php:updateleverancier:entry',
-                'message' => 'Enter updateleverancier',
-                'data' => ['route_id' => (int) $id],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
         // Input valideren
         $data = $request->validate([
             'bedrijfsnaam' => 'required'
@@ -181,100 +158,23 @@ class leveranciersController extends Controller
         // Bedrijfsnaam apart opslaan voor check
         $name = $data['bedrijfsnaam'];
 
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H2',
-                'location' => 'leveranciersController.php:updateleverancier:validated',
-                'message' => 'Validated input for updateleverancier',
-                'data' => ['route_id' => (int) $id, 'bedrijfsnaam_len' => strlen((string) $name)],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
         // Checken of de bedrijfsnaam al bestaat via stored procedure
         $checkNameExists = Leverancier::SP_GetLeverancierByBedrijfsnaam($name);
 
         // Resultaat in $count zetten (0 = bestaat niet, >0 = bestaat)
         $count = $checkNameExists[0]->totaal ?? 0;
 
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H2',
-                'location' => 'leveranciersController.php:updateleverancier:nameCheck',
-                'message' => 'Name existence check result',
-                'data' => ['route_id' => (int) $id, 'count' => (int) $count],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
-        // Als naam al bestaat, alleen toestaan wanneer dit dezelfde leverancier is (merge-friendly UX).
+        // Als naam al bestaat, terug met foutmelding
+        // Zo niet, leverancier aanmaken
         if ($count > 0) {
-            $current = Leverancier::SP_GetLeverancierById($id);
-            $currentName = $current->bedrijfsnaam ?? null;
-
-            if ($currentName !== null && (string) $currentName === (string) $name) {
-                // ok: name unchanged
-            } else {
-                // #region agent log
-                @file_put_contents(
-                    base_path('.cursor/debug.log'),
-                    json_encode([
-                        'sessionId' => 'debug-session',
-                        'runId' => 'pre-fix',
-                        'hypothesisId' => 'H3',
-                        'location' => 'leveranciersController.php:updateleverancier:blockedDuplicate',
-                        'message' => 'Blocked update due to duplicate name',
-                        'data' => ['route_id' => (int) $id, 'currentName_present' => $currentName !== null],
-                        'timestamp' => (int) (microtime(true) * 1000),
-                    ]).PHP_EOL,
-                    FILE_APPEND
-                );
-                // #endregion
-
-                return redirect()->back()->with(
-                    'error', 'deze leverancier bestaat al'
-                );
-            }
+            return redirect()->back()->with(
+                'error', 'deze leverancier bestaat al'
+            );
         } else {
             // id toevoegen aan data array
             $data['id'] = $id;
             $updated = Leverancier::SP_UpdateLeverancier($data);
         }
-
-        // If name existed but unchanged, still run update (id + name)
-        if (!isset($updated)) {
-            $data['id'] = $id;
-            $updated = Leverancier::SP_UpdateLeverancier($data);
-        }
-
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H4',
-                'location' => 'leveranciersController.php:updateleverancier:afterUpdate',
-                'message' => 'After SP_UpdateLeverancier call',
-                'data' => ['route_id' => (int) $id, 'updated' => (bool) $updated],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
         // Succes/foutmelding teruggeven
         if($updated) {
             return redirect()->route('leveranciers.index')->with('success', 'Leverancier succesvol geüpdatet.');
@@ -307,22 +207,6 @@ class leveranciersController extends Controller
     // Levering updaten
     public function updateLevering(Request $request, $id)
     {
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H5',
-                'location' => 'leveranciersController.php:updateLevering:entry',
-                'message' => 'Enter updateLevering',
-                'data' => ['route_id' => (int) $id],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
         // Input valideren
         $data = $request->validate([
             'leverdatum_tijd' => 'required|date',
@@ -331,53 +215,18 @@ class leveranciersController extends Controller
         ]);
 
         // Check of leverancier nog actief is
-        $leveringId = (int) $id;
-        $leverancierId = (int) $data['leverancier_id'];
-        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($leverancierId);
-
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H5',
-                'location' => 'leveranciersController.php:updateLevering:validated',
-                'message' => 'Validated updateLevering + active check',
-                'data' => [
-                    'leveringId' => $leveringId,
-                    'leverancierId' => $leverancierId,
-                    'checkIsActief' => (bool) $checkIsActief,
-                ],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
+        $id = $data['leverancier_id'];
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
         
-        // Als niet actief, foutmelding
-        if (! $checkIsActief) {
+        // Als actief, SP uitvoeren om levering te updaten
+        if($checkIsActief) {
+            $result = Leverancier::SP_CreateLevering($data);
+        } else {
             return redirect()->back()->with('error', 'de leverancier van deze levering is niet meer actief');
         }
 
         // Levering updaten via SP
-        $result = Leverancier::SP_UpdateLevering($leveringId, $data);
-
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug.log'),
-            json_encode([
-                'sessionId' => 'debug-session',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H6',
-                'location' => 'leveranciersController.php:updateLevering:afterUpdate',
-                'message' => 'After SP_UpdateLevering call',
-                'data' => ['leveringId' => $leveringId, 'result' => (bool) $result],
-                'timestamp' => (int) (microtime(true) * 1000),
-            ]).PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
+        $result = Leverancier::SP_UpdateLevering($id, $data);
 
         // Succes/foutmelding teruggeven
         if ($result) {
