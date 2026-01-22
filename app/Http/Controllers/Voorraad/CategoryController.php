@@ -38,11 +38,11 @@ class CategoryController extends Controller
                     if ((int) $mysqlCode !== 1305) {
                         throw $e;
                     }
-                    // Fall back if procedure doesn't exist (Eloquent model)
-                    $categorieen = ProductCategorie::query()
-                        ->active()
-                        ->orderBy('naam', 'asc')
-                        ->get(['id', 'naam']);
+                    // // Fall back if procedure doesn't exist (Eloquent model)
+                    // $categorieen = ProductCategorie::query()
+                    //     ->active()
+                    //     ->orderBy('naam', 'asc')
+                    //     ->get(['id', 'naam']);
                 }
             } else {
                 $categorieen = ProductCategorie::query()
