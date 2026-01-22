@@ -6,12 +6,6 @@
     </x-slot>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        @if(session('error'))
-            <div class="p-4 mb-6 border border-red-600 bg-red-950/50 rounded-lg">
-                <p class="text-red-100">{{ session('error') }}</p>
-            </div>
-        @endif
-
         @if ($errors->any())
             <div class="p-4 mb-6 border border-red-600 bg-red-950/50 rounded-lg">
                 <p class="text-red-100 font-semibold mb-2">Controleer de invoer:</p>

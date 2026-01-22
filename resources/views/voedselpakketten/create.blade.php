@@ -14,9 +14,6 @@
                 <div class="p-6">
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
                             Nieuw Pakket Samenstellen
                         </h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400">Stel een nieuw voedselpakket samen</p>
@@ -53,7 +50,7 @@
                         <!-- Submit -->
                         <div class="flex gap-3">
                             <a href="{{ route('voedselpakketten.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Annuleren</a>
-                            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Pakket Opslaan</button>
+                            <button type="submit" class="flex-1 px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition-colors duration-200 submit-btn">Pakket Opslaan</button>
                         </div>
                     </form>
                 </div>

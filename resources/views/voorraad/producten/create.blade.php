@@ -31,30 +31,6 @@
 
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    @php
-                        // (Hernan Martino Molina) Strip technical DB details from some errors.
-                        $rawError = session('error');
-                        $errorMessage = $rawError;
-
-                        if (is_string($rawError) && str_contains($rawError, 'SQLSTATE[')) {
-                            if (preg_match('/SQLSTATE\[[^\]]+\].*?:\s*\d+\s*(.*?)\s*\(Connection:/', $rawError, $m)) {
-                                $errorMessage = $m[1];
-                            } elseif (preg_match('/SQLSTATE\[[^\]]+\].*?:\s*\d+\s*(.*?)\s*\(SQL:/', $rawError, $m)) {
-                                $errorMessage = $m[1];
-                            } else {
-                                $beforeDetails = preg_split('/\s*\((Connection|SQL):/i', $rawError)[0] ?? $rawError;
-                                $errorMessage = preg_replace('/^SQLSTATE\[[^\]]+\]:\s*.*?:\s*\d+\s*/', '', $beforeDetails);
-                            }
-
-                            $errorMessage = trim((string) $errorMessage);
-                        }
-                    @endphp
-                    <span class="block sm:inline">{{ $errorMessage }}</span>
-                </div>
-            @endif
-
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <form method="POST" action="{{ route('voorraad.producten.store') }}" class="space-y-6">

@@ -50,40 +50,6 @@
                 </form>
             </div>
 
-            <!-- Success/Error Messages -->
-            @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    @php
-                        // (Hernan Martino Molina) Some DB errors can be very technical (SQLSTATE...).
-                        // Here we try to extract the human-friendly part only.
-                        $rawError = session('error');
-                        $errorMessage = $rawError;
-
-                        if (is_string($rawError) && str_contains($rawError, 'SQLSTATE[')) {
-                            // Extract the MySQL SIGNAL message (e.g. "Productnaam ... bestaat")
-                            // from the technical SQLSTATE blob.
-                            if (preg_match('/SQLSTATE\[[^\]]+\].*?:\s*\d+\s*(.*?)\s*\(Connection:/', $rawError, $m)) {
-                                $errorMessage = $m[1];
-                            } elseif (preg_match('/SQLSTATE\[[^\]]+\].*?:\s*\d+\s*(.*?)\s*\(SQL:/', $rawError, $m)) {
-                                $errorMessage = $m[1];
-                            } else {
-                                $beforeDetails = preg_split('/\s*\((Connection|SQL):/i', $rawError)[0] ?? $rawError;
-                                $errorMessage = preg_replace('/^SQLSTATE\[[^\]]+\]:\s*.*?:\s*\d+\s*/', '', $beforeDetails);
-                            }
-
-                            $errorMessage = trim((string) $errorMessage);
-                        }
-                    @endphp
-                    <span class="block sm:inline">{{ $errorMessage }}</span>
-                </div>
-            @endif
-
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="overflow-x-auto">
