@@ -42,9 +42,9 @@
             <!-- New Leverancier Modal -->
             <div id="NewLeverancierFormModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                 <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
-                    <button 
-                        type="button" 
-                        onclick="showNewLeverancierForm()" 
+                    <button
+                        type="button"
+                        onclick="showNewLeverancierForm()"
                         class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl">
                         ✕
                     </button>
@@ -53,7 +53,7 @@
 
                     <form method="POST" action="{{ route('leveranciers.storeLeverancier') }}" class="space-y-6" id="newLeverancier">
                         @csrf
-                        
+
                         <div>
                             <h3 class="text-base font-semibold mb-4 text-gray-900 dark:text-gray-100">Bedrijfs informatie</h3>
                             <div class="space-y-4">
@@ -191,9 +191,9 @@
             <!-- New Levering Modal -->
             <div id="NewLeveringFormModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                 <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
-                    <button 
-                        type="button" 
-                        onclick="showNewLeveringForm()" 
+                    <button
+                        type="button"
+                        onclick="showNewLeveringForm()"
                         class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl">
                         ✕
                     </button>
@@ -202,7 +202,7 @@
 
                     <form method="POST" action="{{ route('leveranciers.storeLevering') }}" class="space-y-6" id="newLevering">
                         @csrf
-                        
+
                         <div>
                             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Bedrijf</label>
                             <select name="leverancier_id" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -237,7 +237,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="font-semibold text-lg">Leveringsoverzicht</h2>
                     <button
-                        onclick="showNewLeveringForm()" 
+                        onclick="showNewLeveringForm()"
                         class="w-full sm:w-auto bg-black text-white dark:bg-gray-100 dark:text-black px-4 py-2 rounded-md text-sm font-semibold hover:bg-black/80 dark:hover:bg-gray-200 transition-colors">
                         + Nieuwe Levering
                     </button>
@@ -261,7 +261,7 @@
                                     <td class="px-4 sm:px-6 py-4 font-medium">{{ $levering->bedrijfsnaam }}</td>
                                     <td class="px-4 sm:px-6 py-4">{{ $levering->contact_naam }}</td>
                                     <td class="px-4 sm:px-6 py-4">
-                                        <?php 
+                                        <?php
                                         $formattedDate = \Carbon\Carbon::parse($levering->eerstvolgende_levering)->format('d-m-Y H:i');
                                         ?>
                                         {{ $formattedDate }}
@@ -305,7 +305,7 @@
                                 </span>
                             </div>
                             <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                <?php 
+                                <?php
                                 $formattedDate = \Carbon\Carbon::parse($levering->eerstvolgende_levering)->format('d-m-Y H:i');
                                 ?>
                                 Volgende levering: {{ $formattedDate }}

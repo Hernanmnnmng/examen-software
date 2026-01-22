@@ -95,13 +95,22 @@ export class VoedselpakketManager {
         if(enabled) {
             // Activeer alles
             container.find('input, select, button.remove-row-btn').prop('disabled', false);
-            addBtn.prop('disabled', false).removeClass(disabledClass);
+            addBtn.prop('disabled', false)
+                .removeClass(disabledClass)
+                .removeAttr('title')
+                .parent().removeAttr('title');
             // Submit knop wordt apart beheerd door validateForm()
         } else {
             // Deactiveer alles
             container.find('input, select, button.remove-row-btn').prop('disabled', true);
-            addBtn.prop('disabled', true).addClass(disabledClass);
-            submitBtn.prop('disabled', true).addClass(disabledClass);
+            addBtn.prop('disabled', true)
+                .addClass(disabledClass)
+                .attr('title', 'Selecteer eerst een klant')
+                .parent().attr('title', 'Selecteer eerst een klant');
+            submitBtn.prop('disabled', true)
+                .addClass(disabledClass)
+                .attr('title', 'Formulier is nog niet klaar om op te slaan')
+                .parent().attr('title', 'Formulier is nog niet klaar om op te slaan');
         }
     }
 
@@ -298,6 +307,7 @@ export class VoedselpakketManager {
 
         let invalidCount = 0;
         let validProductCount = 0;
+        let hasAnyProducts = $selects.length > 0; // Minstens één productrij toegevoegd
 
         // 2. Loop door elke select om opties bij te werken
         $selects.each((index, el) => {
@@ -343,13 +353,34 @@ export class VoedselpakketManager {
         // Heeft de gebruiker iets veranderd t.o.v. het begin?
         const isDirty = this.takeSnapshot() !== this.state.initialData;
 
-        const isDisabled = (invalidCount > 0) || (validProductCount === 0) || (!isDirty);
+        // Knop is enabled als:
+        // - Er geen fouten zijn (invalidCount === 0)
+        // - Er minstens 1 productlijn bestaat (hasAnyProducts)
+        // - Er wijzigingen zijn (isDirty)
+        const isDisabled = (invalidCount > 0) || (!hasAnyProducts) || (!isDirty);
+        const reasons = [];
+        if (invalidCount > 0) reasons.push('Niet toegestane of dubbele producten');
+        if (!hasAnyProducts) reasons.push('Voeg minstens en product toe');
+        if (!isDirty) reasons.push('Geen wijzigingen om op te slaan');
+            const disableReason = reasons.join(' • ');
         const disabledClass = 'opacity-50 cursor-not-allowed';
+        const grayClass = 'bg-gray-400 hover:bg-gray-500';
+        const blueClass = 'bg-blue-600 hover:bg-blue-700';
 
         if(isDisabled) {
-            this.elements.submitBtn.prop('disabled', true).addClass(disabledClass);
+            this.elements.submitBtn.prop('disabled', true)
+                .addClass(disabledClass)
+                .removeClass(blueClass)
+                .addClass(grayClass)
+                .attr('title', disableReason || 'Formulier is nog niet klaar om op te slaan')
+                .parent().attr('title', disableReason || 'Formulier is nog niet klaar om op te slaan');
         } else {
-            this.elements.submitBtn.prop('disabled', false).removeClass(disabledClass);
+            this.elements.submitBtn.prop('disabled', false)
+                .removeClass(disabledClass)
+                .removeClass(grayClass)
+                .addClass(blueClass)
+                .attr('title', 'Pakket opslaan')
+                .parent().removeAttr('title');
         }
     }
 
