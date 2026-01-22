@@ -62,7 +62,7 @@ class CategoryController extends Controller
 
         // Meldingen geven op basis van resultaat
         if($result) {
-            return redirect()->back()->with(
+            return redirect()->route('voorraad.categorieen.index')->with(
                 'success', 'categorie succesvol toegevoegd'
             );
         } else {

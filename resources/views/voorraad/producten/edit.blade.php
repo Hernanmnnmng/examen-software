@@ -55,7 +55,24 @@
                                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                                 <option value="">Selecteer categorie</option>
                                 @foreach($categorieen as $cat)
-                                    @php
+                                    <option value="{{ $cat->id }}" {{ (string) old('categorie_id', $product->categorie_id ?? '') === (string) $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->naam }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('categorie_id')
+                                <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">EAN (13 cijfers)</label>
+                            <input type="text"
+                                   name="ean"
+                                   value="{{ old('ean', $product->ean ?? '') }}"
+                                   inputmode="numeric"
+                                   autocomplete="off"
+                                   minlength="13"
                                    maxlength="13"
                                    pattern="^[0-9]{13}$"
                                    title="Vul exact 13 cijfers in (alleen nummers)."

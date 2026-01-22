@@ -27,10 +27,10 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categorienaam</label>
                             <input type="text" name="naam" value="{{ old('naam') }}"
-                                   maxlength="20"
-                                   pattern="^[^0-9]{1,20}$"
-                                   title="Alleen tekst (geen cijfers), maximaal 20 tekens"
-                                   oninput="this.value=this.value.replace(/[0-9]/g,'').slice(0,20)"
+                                   maxlength="100"
+                                   pattern="^[^0-9]{1,100}$"
+                                   title="Alleen tekst (geen cijfers), maximaal 100 tekens"
+                                   oninput="this.value=this.value.replace(/[0-9]/g,'').slice(0,100)"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             {{-- Field-level validation error --}}
                             @error('naam')
