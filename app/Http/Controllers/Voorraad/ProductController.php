@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductCategorie;
+use App\Models\Allergie;
+use App\Models\Wens;
 
 class ProductController extends Controller
 {
@@ -73,9 +75,15 @@ class ProductController extends Controller
     {
         // Alle actieve categorieen ophalen voor dropdown
         $categorieen = ProductCategorie::SP_GetAllCategorieen();
+        // Alle actieve allergenen ophalen en converteren naar Collection
+        $allergenen = collect(Allergie::SP_GetAllAllergenen());
+        // Alle actieve wensen ophalen en converteren naar Collection
+        $wensen = collect(Wens::SP_GetAllWensen());
 
         return view('voorraad.producten.create', [
-            'categorieen' => $categorieen
+            'categorieen' => $categorieen,
+            'allergenen' => $allergenen,
+            'wensen' => $wensen
         ]);
     }
 
@@ -141,6 +149,10 @@ class ProductController extends Controller
         $product = Product::SP_GetProductById($id);
         // Alle categorieen ophalen voor select dropdown
         $categorieen = ProductCategorie::SP_GetAllCategorieen();
+        // Alle actieve allergenen ophalen en converteren naar Collection
+        $allergenen = collect(Allergie::SP_GetAllAllergenen());
+        // Alle actieve wensen ophalen en converteren naar Collection
+        $wensen = collect(Wens::SP_GetAllWensen());
 
         // Checken of product bestaat
         if (!$product) {
@@ -151,7 +163,9 @@ class ProductController extends Controller
         // Edit view laden
         return view('voorraad.producten.edit', [
             'product' => $product,
-            'categorieen' => $categorieen
+            'categorieen' => $categorieen,
+            'allergenen' => $allergenen,
+            'wensen' => $wensen
         ]);
     }
 
