@@ -6,22 +6,6 @@
     </x-slot>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        @if(session('error'))
-            <div class="p-4 mb-6 border border-red-600 bg-red-950/50 rounded-lg">
-                <p class="text-red-100">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="p-4 mb-6 border border-red-600 bg-red-950/50 rounded-lg">
-                <p class="text-red-100 font-semibold mb-2">Controleer de invoer:</p>
-                <ul class="text-red-100 text-sm list-disc pl-5 space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
             <form method="POST" action="{{ route('leveranciers.storeLeverancier') }}" class="space-y-6">
