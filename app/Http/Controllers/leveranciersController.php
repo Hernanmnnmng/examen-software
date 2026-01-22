@@ -114,6 +114,15 @@ class leveranciersController extends Controller
 
     public function softDeleteLevering(string $id)
     {
+        $datum = date("Y-d-m H:i");
+
+        $levering = Leverancier::SP_GetLeveringById($id);
+        $volgende_levering = $levering->eerstvolgende_levering;
+        // dd($datum);
+        if (strtotime($datum) < strtotime($volgende_levering)){
+            return redirect()->back()->with('error', 'de levering staat nog open');
+        }
+
         // Soft-delete uitvoeren op leverancier
         $affected = Leverancier::SoftDeleteLeveringById((int) $id);
 

@@ -95,7 +95,10 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Postcode</label>
-                                    <input type="text" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" pattern="^[1-9][0-9]{3}\s?[A-Z]{2}$" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    @error('postcode')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Plaats</label>
