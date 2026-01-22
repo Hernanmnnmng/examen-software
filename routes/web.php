@@ -35,14 +35,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('leveranciers.index');
 
     // Separate create page (merge-friendly; keep POST route unchanged)
-    Route::get('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'createLeverancier'])
-        ->middleware('role:Directie')
-        ->name('leveranciers.createLeverancier');
-
     Route::post('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'storeLeverancier'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLeverancier');
-
+    
     Route::post('/admin/leveranciers/nieuwlevering', [leveranciersController::class, 'storeLevering'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLevering');
@@ -51,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:Directie')
         ->name('leveranciers.softDeleteleverancier');
 
-        Route::delete('/admin/leveranciers/{id}/deletelevering', [leveranciersController::class, 'softDeleteLevering'])
+    Route::delete('/admin/leveranciers/{id}/deletelevering', [leveranciersController::class, 'softDeleteLevering'])
         ->middleware('role:Directie')
         ->name('leveranciers.softDeletelevering');
 
@@ -70,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/admin/leveranciers/{id}/updatelevering', [leveranciersController::class, 'updatelevering'])
         ->middleware('role:Directie')
         ->name('leveranciers.updatelevering');
+
 
 
 
