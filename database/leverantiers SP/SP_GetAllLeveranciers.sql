@@ -17,7 +17,8 @@ BEGIN
     INNER JOIN adressen adrs 
         ON lvrn.adres_id = adrs.id
     INNER JOIN contactpersonen cprs 
-        ON lvrn.contactpersoon_id = cprs.id;
+        ON lvrn.contactpersoon_id = cprs.id
+    WHERE lvrn.is_actief = 1;
 END ??
 
 DELIMITER ;
