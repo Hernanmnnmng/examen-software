@@ -1,3 +1,0 @@
--- Directie: directie@voedselbank.nl
--- Magazijnmedewerker: magazijnmedewerker@voedselbank.nl
--- Vrijwilliger: vrijwilliger@voedselbank.nl e

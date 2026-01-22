@@ -26,9 +26,6 @@
                         <x-nav-link :href="route('voorraad.categorieen.index')" :active="request()->routeIs('voorraad.categorieen.*')">
                             {{ __('Categorieën') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                            {{ __('Gebruikers') }}
-                        </x-nav-link>
                         <x-nav-link :href="route('leveranciers.index')" :active="request()->routeIs('leveranciers.*')">
                             {{ __('Leveranciers') }}
                         </x-nav-link>

@@ -34,22 +34,23 @@
                 </div>
                 <button
                     onclick="showNewLeverancierForm()"
-                    class="w-full sm:w-auto bg-black text-white dark:bg-gray-100 dark:text-black px-4 py-2 rounded-md text-sm font-semibold hover:bg-black/80 dark:hover:bg-gray-200 transition-colors">
+                    class="w-full sm:w-auto bg-blue-600 text-white dark:bg-blue-700 dark:text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
                     + Nieuwe Leverancier
                 </button>
             </div>
 
             <!-- New Leverancier Modal -->
-            <div id="NewLeverancierFormModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+            <div id="NewLeverancierFormModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4">
+                <div class="flex min-h-full items-center justify-center p-4">
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl p-6 relative my-8">
                     <button
                         type="button"
                         onclick="showNewLeverancierForm()"
-                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl">
+                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl z-10">
                         ✕
                     </button>
 
-                    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">Nieuwe Leverancier</h2>
+                    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100 pr-8">Nieuwe Leverancier</h2>
 
                     <form method="POST" action="{{ route('leveranciers.storeLeverancier') }}" class="space-y-6" id="newLeverancier">
                         @csrf
@@ -109,9 +110,10 @@
 
                         <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <button type="button" onclick="showNewLeverancierForm()" class="w-full sm:w-auto bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">Annuleren</button>
-                            <button type="submit" form="newLeverancier" class="w-full sm:w-auto bg-black hover:bg-black/80 dark:bg-gray-100 dark:text-black dark:hover:bg-gray-200 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">Opslaan</button>
+                            <button type="submit" form="newLeverancier" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">Opslaan</button>
                         </div>
                     </form>
+                </div>
                 </div>
             </div>
 
@@ -189,16 +191,17 @@
             </div>
 
             <!-- New Levering Modal -->
-            <div id="NewLeveringFormModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+            <div id="NewLeveringFormModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4">
+                <div class="flex min-h-full items-center justify-center p-4">
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl p-6 relative my-8">
                     <button
                         type="button"
                         onclick="showNewLeveringForm()"
-                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl">
+                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl z-10">
                         ✕
                     </button>
 
-                    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">Nieuwe Levering</h2>
+                    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100 pr-8">Nieuwe Levering</h2>
 
                     <form method="POST" action="{{ route('leveranciers.storeLevering') }}" class="space-y-6" id="newLevering">
                         @csrf
@@ -226,9 +229,10 @@
 
                         <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <button type="button" onclick="showNewLeveringForm()" class="w-full sm:w-auto bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">Annuleren</button>
-                            <button type="submit" form="newLevering" class="w-full sm:w-auto bg-black hover:bg-black/80 dark:bg-gray-100 dark:text-black dark:hover:bg-gray-200 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">Opslaan</button>
+                            <button type="submit" form="newLevering" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">Opslaan</button>
                         </div>
                     </form>
+                </div>
                 </div>
             </div>
 
@@ -238,7 +242,7 @@
                     <h2 class="font-semibold text-lg">Leveringsoverzicht</h2>
                     <button
                         onclick="showNewLeveringForm()"
-                        class="w-full sm:w-auto bg-black text-white dark:bg-gray-100 dark:text-black px-4 py-2 rounded-md text-sm font-semibold hover:bg-black/80 dark:hover:bg-gray-200 transition-colors">
+                        class="w-full sm:w-auto bg-blue-600 text-white dark:bg-blue-700 dark:text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
                         + Nieuwe Levering
                     </button>
                 </div>

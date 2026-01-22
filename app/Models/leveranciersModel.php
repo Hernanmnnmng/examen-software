@@ -7,46 +7,27 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class leveranciersModel extends Model
-{    
-     // All actieve leveranciers ophalen uit de database
+{
+     // All actieve leveranciers ophalen uit de database via stored procedure
      static public function GetActiveLeveranciers()
-     {    
-          // try catch voor veiligheid en error handeling
+     {
           try {
-               //loggen dat het is begonnen
-               Log::info('GetActiveLeveranciers gestart');
-               
-               // opgehaalde results in $result zetten
-               $result = DB::select(
-                    'SELECT 
-                         lvrn.id,
-                         lvrn.bedrijfsnaam,
-                         adrs.straat,
-                         adrs.huisnummer,
-                         adrs.postcode,
-                         adrs.plaats,
-                         cprs.contact_naam,
-                         cprs.email,
-                         cprs.telefoon
-                    FROM leveranciers lvrn
-                    INNER JOIN adressen adrs 
-                         ON lvrn.adres_id = adrs.id
-                    INNER JOIN contactpersonen cprs 
-                         ON lvrn.contactpersoon_id = cprs.id
-                    WHERE lvrn.is_actief = 1'
-               );
+               // log dat het is begonnen
+               Log::info('SP_GetActiveLeveranciers gestart');
+
+               // stored procedure aanroepen
+               $result = DB::select('CALL SP_GetActiveLeveranciers()');
 
                // log dat het succesvol was
-               Log::info('GetActiveLeveranciers succesvol uitgevoerd');
+               Log::info('SP_GetActiveLeveranciers succesvol uitgevoerd');
 
                // $result terug geven
                return $result;
-          // catch als er een fout is
           } catch (\Throwable $e) {
                // de fout loggen
-               Log::error('Fout in GetActiveLeveranciers', ['error' => $e->getMessage()]);
+               Log::error('Fout in SP_GetActiveLeveranciers', ['error' => $e->getMessage()]);
 
-               //lege array terug geven zodat de app niet kapot gaat
+               // lege array terug geven zodat de app niet kapot gaat
                return [];
           }
      }
@@ -58,7 +39,7 @@ class leveranciersModel extends Model
                //log dat het is begonnen
                Log::info('SP_GetAllLeveranciers gestart');
                //result van de stored procedure zetten in $result
-               $result = DB::select('CALL SP_GetAllLeveranciers()'); 
+               $result = DB::select('CALL SP_GetAllLeveranciers()');
                // log dat het succesvol was
                Log::info('SP_GetAllLeveranciers succesvol uitgevoerd');
                // $result terug geven
@@ -74,7 +55,7 @@ class leveranciersModel extends Model
      //alle leveringen ophalen
      static public function SP_GetAllLeveringen()
      {
-          try {    
+          try {
                //log dat het is begonnen
                Log::info('SP_GetAllLeveringen gestart');
                // resultaten in $result zetten
@@ -90,7 +71,7 @@ class leveranciersModel extends Model
                return [];
           }
      }
-     
+
      // fucntion om leverancier op te halen op naam om te checken of die al bestaat
      static public function SP_GetLeverancierByBedrijfsnaam($name)
      {
@@ -99,7 +80,7 @@ class leveranciersModel extends Model
                Log::info('SP_GetLeverancierByBedrijfsnaam gestart', ['name' => $name]);
                // resultaten in $result zetten
                $result = DB::select('CALL SP_GetLeverancierByBedrijfsnaam(?)', [$name]);
-               
+
                Log::info('SP_GetLeverancierByBedrijfsnaam succesvol uitgevoerd');
                // result terug geven
                return $result;
@@ -143,42 +124,49 @@ class leveranciersModel extends Model
      {
           try {
                // log begin
-               Log::info('SoftDeleteLeverancierById gestart', ['id' => $id]);
-               // resultaten in $result zetten
-               $result = DB::update('UPDATE 
-                                        leveranciers 
-                                   SET is_actief = 0 WHERE id = ?', [$id]);
+               Log::info('SP_SoftDeleteLeverancierById gestart', ['id' => $id]);
+
+               // stored procedure aanroepen
+               $result = DB::select('CALL SP_SoftDeleteLeverancierById(?)', [$id]);
+
+               // aantal aangepaste rijen uit result halen
+               $affectedRows = !empty($result) ? (int)$result[0]->affected_rows : 0;
+
                // log success
-               Log::info('SoftDeleteLeverancierById succesvol uitgevoerd');
-               // result terug geven
-               return $result;
+               Log::info('SP_SoftDeleteLeverancierById succesvol uitgevoerd', ['affected_rows' => $affectedRows]);
+
+               // aantal aangepaste rijen terug geven
+               return $affectedRows;
           } catch (\Throwable $e) {
-               //log dat het fout is gegaan en waar precies en wat er fout is gegaan
-               Log::error('Fout in SoftDeleteLeverancierById', ['error' => $e->getMessage()]);
-               // leeg terug geven zodat de app niet kapot gaat
+               // log dat het fout is gegaan
+               Log::error('Fout in SP_SoftDeleteLeverancierById', ['error' => $e->getMessage()]);
+               // 0 terug geven zodat de app niet kapot gaat
                return 0;
           }
      }
 
      static public function SoftDeleteLeveringenByLeverancierId(int $id): int
      {
-     try {
-          // log begin
-          Log::info('SoftDeleteLeveringenByLeverancierId gestart', ['leverancier_id' => $id]);
+          try {
+               // log begin
+               Log::info('SP_SoftDeleteLeveringenByLeverancierId gestart', ['leverancier_id' => $id]);
 
-          // update alle leveringen voor deze leverancier
-          $result = DB::update('UPDATE leveringen SET is_actief = 0 WHERE leverancier_id = ?', [$id]);
+               // stored procedure aanroepen
+               $result = DB::select('CALL SP_SoftDeleteLeveringenByLeverancierId(?)', [$id]);
 
-          // log success
-          Log::info('SoftDeleteLeveringenByLeverancierId succesvol uitgevoerd', ['aantal_affected' => $result]);
+               // aantal aangepaste rijen uit result halen
+               $affectedRows = !empty($result) ? (int)$result[0]->affected_rows : 0;
 
-          // return aantal gewijzigde rijen
-          return $result;
-     } catch (\Throwable $e) {
-          // log error
-          Log::error('Fout in SoftDeleteLeveringenByLeverancierId', ['error' => $e->getMessage()]);
-          return 0;
-     }
+               // log success
+               Log::info('SP_SoftDeleteLeveringenByLeverancierId succesvol uitgevoerd', ['affected_rows' => $affectedRows]);
+
+               // return aantal gewijzigde rijen
+               return $affectedRows;
+          } catch (\Throwable $e) {
+               // log error
+               Log::error('Fout in SP_SoftDeleteLeveringenByLeverancierId', ['error' => $e->getMessage()]);
+               return 0;
+          }
      }
 
 
@@ -186,17 +174,23 @@ class leveranciersModel extends Model
      {
           try {
                // log begin
-               Log::info('SoftDeleteLeveringById gestart', ['id' => $id]);
-               // resultaten in $result zetten
-               $result = DB::update('UPDATE leveringen SET is_actief = 0 WHERE id = ?', [$id]);
+               Log::info('SP_SoftDeleteLeveringById gestart', ['id' => $id]);
+
+               // stored procedure aanroepen
+               $result = DB::select('CALL SP_SoftDeleteLeveringById(?)', [$id]);
+
+               // aantal aangepaste rijen uit result halen
+               $affectedRows = !empty($result) ? (int)$result[0]->affected_rows : 0;
+
                // log success
-               Log::info('SoftDeleteLeveringById succesvol uitgevoerd');
-               // result terug geven
-               return $result;
+               Log::info('SP_SoftDeleteLeveringById succesvol uitgevoerd', ['affected_rows' => $affectedRows]);
+
+               // aantal aangepaste rijen terug geven
+               return $affectedRows;
           } catch (\Throwable $e) {
-               //log dat het fout is gegaan en waar precies en wat er fout is gegaan
-               Log::error('Fout in SoftDeleteLeveringById', ['error' => $e->getMessage()]);
-               // leeg terug geven zodat de app niet kapot gaat
+               // log dat het fout is gegaan
+               Log::error('Fout in SP_SoftDeleteLeveringById', ['error' => $e->getMessage()]);
+               // 0 terug geven zodat de app niet kapot gaat
                return 0;
           }
      }
