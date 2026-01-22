@@ -130,7 +130,7 @@ class ProductController extends Controller
 
         // Meldingen geven op basis van resultaat
         if($result) {
-            return redirect()->back()->with(
+            return redirect()->route('voorraad.producten.index')->with(
                 'success', 'product succesvol toegevoegd'
             );
         } else {
