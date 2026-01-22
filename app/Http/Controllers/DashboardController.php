@@ -3,31 +3,45 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     /**
-     * Display the admin dashboard.
+     * Display the dashboard.
      */
-    public function admin(): View
+    public function index(Request $request): View
     {
-        return view('dashboard.admin');
-    }
+        $user = auth()->user();
+        $isAdmin = $user->role === 'Directie';
 
-    /**
-     * Display the worker dashboard.
-     */
-    public function worker(): View
-    {
-        return view('dashboard.worker');
-    }
+        $rapportageData = [];
+        $maand = null;
+        $jaar = null;
+        $rapportageType = null;
 
-    /**
-     * Display the user dashboard.
-     */
-    public function user(): View
-    {
-        return view('dashboard.user');
+        // Handle rapportage requests
+        if ($isAdmin && $request->has('rapportage')) {
+            $rapportageType = $request->input('rapportage');
+            $maand = $request->input('maand');
+            $jaar = $request->input('jaar');
+
+            if ($maand && $jaar) {
+                if ($rapportageType === 'productcategorie') {
+                    $rapportageData = DB::select('CALL SP_GetMaandoverzichtProductcategorie(?, ?)', [$maand, $jaar]);
+                } elseif ($rapportageType === 'postcode') {
+                    $rapportageData = DB::select('CALL SP_GetMaandoverzichtPostcode(?, ?)', [$maand, $jaar]);
+                }
+            }
+        }
+
+        return view('dashboard.index', [
+            'isAdmin' => $isAdmin,
+            'rapportageType' => $rapportageType,
+            'rapportageData' => $rapportageData,
+            'maand' => $maand,
+            'jaar' => $jaar
+        ]);
     }
 }

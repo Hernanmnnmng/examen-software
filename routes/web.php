@@ -9,24 +9,16 @@ use App\Http\Middleware\EnsureUserHasAnyRole;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
     return view('welcome');
 });
 
 // Role-based dashboards
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
-        return match($user->role) {
-            'Directie' => redirect()->route('dashboard.admin'),
-            'Magazijnmedewerker' => redirect()->route('dashboard.worker'),
-            'Vrijwilliger' => redirect()->route('dashboard.user'),
-            default => redirect()->route('dashboard.user'),
-        };
-    })->name('dashboard');
-
-    Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
-        ->middleware('role:Directie')
-        ->name('dashboard.admin');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
     // levering & leverancier routes begin
 
@@ -38,7 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/leveranciers/nieuwleverancier', [leveranciersController::class, 'storeLeverancier'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLeverancier');
-    
+
     Route::post('/admin/leveranciers/nieuwlevering', [leveranciersController::class, 'storeLevering'])
         ->middleware('role:Directie')
         ->name('leveranciers.storeLevering');
@@ -71,14 +63,6 @@ Route::middleware(['auth'])->group(function () {
 
 
     // levering & leverancier routes eind
-
-    Route::get('/dashboard/worker', [DashboardController::class, 'worker'])
-        ->middleware(EnsureUserHasAnyRole::class.':Magazijnmedewerker,Directie')
-        ->name('dashboard.worker');
-
-    Route::get('/dashboard/user', [DashboardController::class, 'user'])
-        ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
-        ->name('dashboard.user');
 
     Route::get('/voedselpakketten', [VoedselpakketController::class, 'index'])
         ->middleware(EnsureUserHasAnyRole::class.':Vrijwilliger,Directie')
