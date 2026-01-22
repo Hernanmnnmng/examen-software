@@ -145,7 +145,9 @@ class leveranciersModel extends Model
                // log begin
                Log::info('SoftDeleteLeverancierById gestart', ['id' => $id]);
                // resultaten in $result zetten
-               $result = DB::update('UPDATE leveranciers SET is_actief = 0 WHERE id = ?', [$id]);
+               $result = DB::update('UPDATE 
+                                        leveranciers 
+                                   SET is_actief = 0 WHERE id = ?', [$id]);
                // log success
                Log::info('SoftDeleteLeverancierById succesvol uitgevoerd');
                // result terug geven
@@ -157,6 +159,28 @@ class leveranciersModel extends Model
                return 0;
           }
      }
+
+     static public function SoftDeleteLeveringenByLeverancierId(int $id): int
+     {
+     try {
+          // log begin
+          Log::info('SoftDeleteLeveringenByLeverancierId gestart', ['leverancier_id' => $id]);
+
+          // update alle leveringen voor deze leverancier
+          $result = DB::update('UPDATE leveringen SET is_actief = 0 WHERE leverancier_id = ?', [$id]);
+
+          // log success
+          Log::info('SoftDeleteLeveringenByLeverancierId succesvol uitgevoerd', ['aantal_affected' => $result]);
+
+          // return aantal gewijzigde rijen
+          return $result;
+     } catch (\Throwable $e) {
+          // log error
+          Log::error('Fout in SoftDeleteLeveringenByLeverancierId', ['error' => $e->getMessage()]);
+          return 0;
+     }
+     }
+
 
      static public function SoftDeleteLeveringById(int $id): int
      {

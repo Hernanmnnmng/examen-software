@@ -103,7 +103,7 @@ class leveranciersController extends Controller
     {
         // Soft-delete uitvoeren op leverancier
         $affected = Leverancier::SoftDeleteLeverancierById((int) $id);
-
+                    Leverancier::SoftDeleteLeveringenByLeverancierId((int) $id);
         // Succes/foutmelding tonen
         if ($affected > 0) {
             return redirect()->back()->with('success', 'leverancier succesvol verwijderd');
