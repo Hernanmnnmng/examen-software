@@ -3,297 +3,238 @@
 namespace App\Http\Controllers\Voorraad;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductCategorie;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
-use Throwable;
 
-/**
- * Voorraadbeheer: Product CRUD + listing.
- */
 class ProductController extends Controller
 {
     /**
-     * Product overview with optional EAN filter and safe sorting.
+     * Display a listing of the resource.
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
+        // Get query parameters for search and sorting
         $ean = (string) $request->query('ean', '');
         $sort = (string) $request->query('sort', 'product_naam');
         $dir = strtolower((string) $request->query('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        $allowedSorts = ['product_naam', 'categorie', 'ean', 'aantal_voorraad'];
-        if (! in_array($sort, $allowedSorts, true)) {
+        // Alleen actieve producten ophalen (soft-deleted producten worden verborgen)
+        $producten = Product::SP_GetAllProductenVoorraad();
+
+        // Filter by EAN if provided (merge-friendly: simple PHP filter)
+        if ($ean !== '') {
+            $producten = array_filter($producten, function($product) use ($ean) {
+                return isset($product->ean) && $product->ean === $ean;
+            });
+            // Re-index array after filter
+            $producten = array_values($producten);
+        }
+
+        // Sort products (merge-friendly: simple PHP sort)
+        // Map view column names to actual property names
+        $sortMap = [
+            'product_naam' => 'product_naam',
+            'categorie' => 'categorie_naam',  // View uses 'categorie' but SP returns 'categorie_naam'
+            'ean' => 'ean',
+            'aantal_voorraad' => 'aantal_voorraad'
+        ];
+        
+        $allowedSorts = array_keys($sortMap);
+        if (!in_array($sort, $allowedSorts, true)) {
             $sort = 'product_naam';
         }
 
-        try {
-            // Logic moved to Model
-            $producten = Product::listProducts($ean, $sort, $dir);
-        } catch (Throwable $e) {
-            report($e);
-            session()->flash('error', 'Kon producten niet laden.');
-            $producten = [];
-        }
+        $sortColumn = $sortMap[$sort] ?? 'product_naam';
+        
+        usort($producten, function($a, $b) use ($sortColumn, $dir) {
+            $aVal = $a->$sortColumn ?? '';
+            $bVal = $b->$sortColumn ?? '';
+            
+            if ($dir === 'desc') {
+                return $bVal <=> $aVal;
+            }
+            return $aVal <=> $bVal;
+        });
 
+        // View laden met alle producten
         return view('voorraad.producten.index', [
             'producten' => $producten,
             'ean' => $ean,
             'sort' => $sort,
-            'dir' => $dir,
+            'dir' => $dir
         ]);
     }
 
     /**
-     * Show create form.
+     * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
-        $categorieen = $this->getCategorieen();
-        $allergenen = $this->getAllergenen();
-        $wensen = $this->getWensen();
+        // Alle actieve categorieen ophalen voor dropdown
+        $categorieen = ProductCategorie::SP_GetAllCategorieen();
 
         return view('voorraad.producten.create', [
-            'categorieen' => $categorieen,
-            'allergenen' => $allergenen,
-            'wensen' => $wensen,
+            'categorieen' => $categorieen
         ]);
     }
 
     /**
-     * Create a new product.
+     * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'product_naam' => ['required', 'string', 'max:255'],
-            'categorie_id' => ['required', 'integer', 'exists:product_categorieen,id'],
-            'ean' => ['required', 'digits:13'],
-            'aantal_voorraad' => ['required', 'integer', 'min:0'],
-            'allergie_ids' => ['nullable', 'array'],
-            'allergie_ids.*' => ['integer', 'exists:allergenen,id'],
-            'wens_ids' => ['nullable', 'array'],
-            'wens_ids.*' => ['integer', 'exists:wensen,id'],
+        // Data valideren van formulier input
+        $data = $request->validate([
+            'product_naam' => 'required|string|max:255',
+            'ean' => 'required|string|size:13',
+            'categorie_id' => 'required|integer',
+            'aantal_voorraad' => 'required|integer|min:0'
         ]);
 
-        try {
-            Product::createProduct($validated);
+        // Productnaam apart opslaan voor check
+        $naam = $data['product_naam'];
+        $ean = $data['ean'];
 
-            return redirect()
-                ->route('voorraad.producten.index')
-                ->with('success', 'Product aangemaakt');
-        } catch (QueryException $e) {
-            return back()
-                ->withInput()
-                ->with('error', $this->friendlyDbMessage($e));
-        } catch (Throwable $e) {
-            report($e);
-            return back()->withInput()->with('error', 'Product aanmaken mislukt');
+        // Checken of de productnaam al bestaat via stored procedure
+        $checkNameExists = Product::SP_GetProductByNaam($naam);
+        $countName = $checkNameExists[0]->totaal ?? 0;
+
+        // Checken of de EAN al bestaat via stored procedure
+        $checkEanExists = Product::SP_GetProductByEan($ean);
+        $countEan = $checkEanExists[0]->totaal ?? 0;
+
+        // Als naam of EAN al bestaat, terug met foutmelding
+        if ($countName > 0) {
+            return redirect()->back()->with(
+                'error', 'deze productnaam bestaat al'
+            );
+        }
+
+        if ($countEan > 0) {
+            return redirect()->back()->with(
+                'error', 'deze EAN-code bestaat al'
+            );
+        }
+
+        // Product aanmaken via stored procedure
+        $result = Product::SP_CreateProduct($data);
+
+        // Meldingen geven op basis van resultaat
+        if($result) {
+            return redirect()->back()->with(
+                'success', 'product succesvol toegevoegd'
+            );
+        } else {
+            return redirect()->back()->with(
+                'error', 'product niet succesvol toegevoegd'
+            );
         }
     }
 
     /**
-     * Show edit form.
+     * Show the form for editing the specified resource.
      */
-    public function edit(int $id): View
+    public function edit($id)
     {
-        $categorieen = $this->getCategorieen();
-        $product = Product::getProduct($id);
+        // Huidige product ophalen
+        $product = Product::SP_GetProductById($id);
+        // Alle categorieen ophalen voor select dropdown
+        $categorieen = ProductCategorie::SP_GetAllCategorieen();
 
-        abort_if(! $product, 404);
+        // Checken of product bestaat
+        if (!$product) {
+            return redirect()->route('voorraad.producten.index')
+                ->with('error', 'Product niet gevonden');
+        }
 
+        // Edit view laden
         return view('voorraad.producten.edit', [
             'product' => $product,
-            'categorieen' => $categorieen,
-            'allergenen' => $allergenen,
-            'selectedAllergieIds' => $selectedAllergieIds,
-            'wensen' => $wensen,
-            'selectedWensIds' => $selectedWensIds,
+            'categorieen' => $categorieen
         ]);
     }
 
     /**
-     * Update an existing product.
+     * Update the specified resource in storage.
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'product_naam' => ['required', 'string', 'max:255'],
-            'categorie_id' => ['required', 'integer', 'exists:product_categorieen,id'],
-            'ean' => ['required', 'digits:13'],
-            'aantal_voorraad' => ['required', 'integer', 'min:0'],
-            'allergie_ids' => ['nullable', 'array'],
-            'allergie_ids.*' => ['integer', 'exists:allergenen,id'],
-            'wens_ids' => ['nullable', 'array'],
-            'wens_ids.*' => ['integer', 'exists:wensen,id'],
+        // Input valideren
+        $data = $request->validate([
+            'product_naam' => 'required|string|max:255',
+            'ean' => 'required|string|size:13',
+            'categorie_id' => 'required|integer',
+            'aantal_voorraad' => 'required|integer|min:0'
         ]);
 
-        try {
-            Product::updateProduct($id, $validated);
+        // Productnaam en EAN apart opslaan voor check
+        $naam = $data['product_naam'];
+        $ean = $data['ean'];
 
-            return redirect()
-                ->route('voorraad.producten.index')
-                ->with('success', 'Wijzigingen opgeslagen');
-        } catch (QueryException $e) {
-            return back()
-                ->withInput()
-                ->with('error', $this->friendlyDbMessage($e));
-        } catch (Throwable $e) {
-            report($e);
-            return back()->withInput()->with('error', 'Product wijzigen mislukt');
-        }
-    }
+        // Checken of de productnaam al bestaat (exclusief huidige record)
+        $checkNameExists = Product::SP_GetProductByNaam($naam);
+        $countName = $checkNameExists[0]->totaal ?? 0;
 
-    /**
-     * Delete a product.
-     */
-    public function destroy(int $id): RedirectResponse
-    {
-        try {
-            Product::deleteProduct($id);
+        // Checken of de EAN al bestaat (exclusief huidige record)
+        $checkEanExists = Product::SP_GetProductByEan($ean);
+        $countEan = $checkEanExists[0]->totaal ?? 0;
 
-            return redirect()
-                ->route('voorraad.producten.index')
-                ->with('success', 'Product verwijderd');
-        } catch (QueryException $e) {
-            return redirect()
-                ->route('voorraad.producten.index')
-                ->with('error', $this->friendlyDbMessage($e));
-        } catch (Throwable $e) {
-            // Catch custom exception from Eloquent fallback or general errors
-            report($e);
-            return redirect()
-                ->route('voorraad.producten.index')
-                ->with('error', $e->getMessage() ?: 'Product verwijderen mislukt');
-        }
-    }
+        // Huidig product ophalen om te checken of naam/EAN hetzelfde zijn
+        $currentProduct = Product::SP_GetProductById($id);
+        
+        if ($currentProduct) {
+            // Als naam gewijzigd is en al bestaat
+            if ($currentProduct->product_naam !== $naam && $countName > 0) {
+                return redirect()->back()->with(
+                    'error', 'deze productnaam bestaat al'
+                );
+            }
 
-    /**
-     * Categories for dropdowns.
-     */
-    private function getCategorieen()
-    {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            try {
-                return DB::select('CALL sp_category_list()');
-            } catch (QueryException $e) {
-                if ((int) ($e->errorInfo[1] ?? 0) !== 1305) throw $e;
+            // Als EAN gewijzigd is en al bestaat
+            if ($currentProduct->ean !== $ean && $countEan > 0) {
+                return redirect()->back()->with(
+                    'error', 'deze EAN-code bestaat al'
+                );
             }
         }
 
-        return ProductCategorie::query()
-            ->active()
-            ->orderBy('naam', 'asc')
-            ->get(['id', 'naam']);
+        // id toevoegen aan data array
+        $data['id'] = $id;
+        $updated = Product::SP_UpdateProduct($data);
+
+        // Succes/foutmelding teruggeven
+        if($updated) {
+            return redirect()->route('voorraad.producten.index')->with('success', 'Product succesvol geüpdatet.');
+        } else {
+            return redirect()->back()->with('error', 'Er ging iets mis bij het updaten.');
+        }
     }
 
     /**
-     * Allergenen for multi-select/checkboxes.
+     * Remove the specified resource from storage.
      */
-    private function getAllergenen()
+    public function destroy($id)
     {
-        // Merge-friendly: not all environments will have this table yet.
-        if (! Schema::hasTable('allergenen')) {
-            return collect();
+        // Check of product gebruikt wordt in voedselpakketten
+        $checkIsUsed = Product::SP_CheckIfProductIsUsedInVoedselpakket((int) $id);
+        $count = $checkIsUsed[0]->totaal ?? 0;
+
+        // Als product gebruikt wordt, blokkeren
+        if ($count > 0) {
+            return redirect()->back()->with(
+                'error', 'Product kan niet worden verwijderd, het is al gebruikt in een voedselpakket'
+            );
         }
 
-        return DB::table('allergenen')
-            ->select(['id', 'naam'])
-            ->where('is_actief', '=', 1)
-            ->orderBy('naam', 'asc')
-            ->get();
-    }
+        // Soft-delete uitvoeren op product
+        $affected = Product::SoftDeleteProductById((int) $id);
 
-    /**
-     * Selected allergenen for a given product.
-     *
-     * @return array<int>
-     */
-    private function getSelectedAllergieIds(int $productId): array
-    {
-        if (! Schema::hasTable('product_allergenen')) {
-            return [];
+        // Succes/foutmelding tonen
+        if ($affected > 0) {
+            return redirect()->back()->with('success', 'product succesvol verwijderd');
         }
 
-        return DB::table('product_allergenen')
-            ->where('product_id', '=', $productId)
-            ->pluck('allergie_id')
-            ->map(static fn ($v) => (int) $v)
-            ->all();
-    }
-
-    /**
-     * Wensen/kenmerken for multi-select/checkboxes.
-     */
-    private function getWensen()
-    {
-        if (! Schema::hasTable('wensen')) {
-            return collect();
-        }
-
-        return DB::table('wensen')
-            ->select(['id', 'omschrijving'])
-            ->where('is_actief', '=', 1)
-            ->orderBy('omschrijving', 'asc')
-            ->get();
-    }
-
-    /**
-     * Selected wensen/kenmerken for a given product.
-     *
-     * @return array<int>
-     */
-    private function getSelectedWensIds(int $productId): array
-    {
-        if (! Schema::hasTable('product_kenmerken')) {
-            return [];
-        }
-
-        return DB::table('product_kenmerken')
-            ->where('product_id', '=', $productId)
-            ->pluck('wens_id')
-            ->map(static fn ($v) => (int) $v)
-            ->all();
-    }
-
-    /**
-     * Convert low-level DB exceptions to a user-facing message.
-     */
-    private function friendlyDbMessage(QueryException $e): string
-    {
-        $info = $e->errorInfo;
-        $sqlState = is_array($info) ? ($info[0] ?? null) : null;
-        $message = $e->getMessage();
-        $lowerMsg = strtolower($message);
-
-        // 1. User-defined signal (45000)
-        if ($sqlState === '45000') {
-            return $message;
-        }
-
-        // 2. Duplicate entry
-        if (str_contains($lowerMsg, 'unique') || str_contains($lowerMsg, 'duplicate')) {
-            return 'Productnaam of EAN-code bestaat al.';
-        }
-
-        // 3. Foreign key / usage constraint
-        if (str_contains($lowerMsg, 'integrity constraint') ||
-            str_contains($lowerMsg, 'foreign key') ||
-            str_contains($lowerMsg, 'constraint fails')) {
-            return 'Product kan niet worden verwijderd omdat het gekoppeld is aan andere gegevens.';
-        }
-
-        // 4. Specific text check (for manual exceptions or Dutch signals if state wasn't 45000)
-        if (str_contains($lowerMsg, 'verwijderd')) {
-             return 'Product kan niet worden verwijderd, het is al gebruikt.';
-        }
-
-        // 5. Fallback with code for debugging
-        return 'Er ging iets mis bij het opslaan (SQL Code: ' . ($sqlState ?? 'Unknown') . ').';
+        return redirect()->back()->with('error', 'product niet gevonden of al verwijderd');
     }
 }
-
