@@ -15,7 +15,7 @@ class leveranciersController extends Controller
         // Alleen actieve leveranciers ophalen (soft-deleted leveranciers worden verborgen)
         $leveranciers = Leverancier::SP_GetAllLeveranciers();
         $leveringen = Leverancier::SP_GetAllLeveringen();
-        
+
         // dd($leveringen); // debug optie
 
         // View laden met alle leveranciers en leveringen
@@ -25,8 +25,8 @@ class leveranciersController extends Controller
         ]);
     }
 
-    public function storeLeverancier(Request $request) 
-    {  
+    public function storeLeverancier(Request $request)
+    {
         // Data valideren van formulier input
         $data = $request->validate([
              'bedrijfsnaam'  =>  'required'
@@ -82,7 +82,7 @@ class leveranciersController extends Controller
         // Check of leverancier nog actief is
         $id = $data['leverancier_id'];
         $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
-        
+
         // Als actief, levering aanmaken via stored procedure
         if($checkIsActief) {
             $result = Leverancier::SP_CreateLevering($data);
@@ -101,6 +101,12 @@ class leveranciersController extends Controller
 
     public function softDeleteLeverancier(string $id)
     {
+        // Checken of leverancier actief is
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
+        if(!$checkIsActief) {
+            return redirect()->back()->with('error', 'Deze leverancier is al verwijderd.');
+        }
+
         // Soft-delete uitvoeren op leverancier
         $affected = Leverancier::SoftDeleteLeverancierById((int) $id);
                     Leverancier::SoftDeleteLeveringenByLeverancierId((int) $id);
@@ -114,9 +120,14 @@ class leveranciersController extends Controller
 
     public function softDeleteLevering(string $id)
     {
-        $datum = date("Y-m-d H:i:s"); // CORRECT formaat
-
         $levering = Leverancier::SP_GetLeveringById($id);
+
+        // Checken of levering nog actief is
+        if(!$levering || !$levering->is_actief) {
+            return redirect()->back()->with('error', 'Deze levering is al verwijderd.');
+        }
+
+        $datum = date("Y-m-d H:i:s"); // CORRECT formaat
         $volgende_levering = $levering->eerstvolgende_levering;
 
         if (strtotime($datum) < strtotime($volgende_levering)) {
@@ -153,6 +164,11 @@ class leveranciersController extends Controller
             return redirect()->route('leveranciers.index')->with('error', 'Leverancier niet gevonden.');
         }
 
+        // Checken of leverancier actief is
+        if(!$leverancier->is_actief) {
+            return redirect()->route('leveranciers.index')->with('error', 'Deze leverancier is niet actief en kan niet bewerkt worden.');
+        }
+
         // Edit view laden
         return view('leveranciers.editleverancier', compact('leverancier'));
     }
@@ -160,6 +176,12 @@ class leveranciersController extends Controller
     // Leverancier updaten
     public function updateleverancier(Request $request, $id)
     {
+        // Checken of leverancier actief is
+        $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
+        if(!$checkIsActief) {
+            return redirect()->route('leveranciers.index')->with('error', 'Deze leverancier is niet actief en kan niet bewerkt worden.');
+        }
+
         // Input valideren
         $data = $request->validate([
             'bedrijfsnaam' => 'required'
@@ -207,6 +229,12 @@ class leveranciersController extends Controller
                 ->with('error', 'Levering niet gevonden');
         }
 
+        // Checken of levering actief is
+        if(!$levering->is_actief) {
+            return redirect()->route('leveranciers.index')
+                ->with('error', 'Deze levering is niet actief en kan niet bewerkt worden.');
+        }
+
         // Edit view laden
         return view('leveranciers.editlevering', [
             'levering' => $levering,
@@ -217,6 +245,13 @@ class leveranciersController extends Controller
     // Levering updaten
     public function updateLevering(Request $request, $id)
     {
+        // Checken of levering nog actief is
+        $levering = Leverancier::SP_GetLeveringById($id);
+        if(!$levering || !$levering->is_actief) {
+            return redirect()->route('leveranciers.index')
+                ->with('error', 'Deze levering is niet actief en kan niet bewerkt worden.');
+        }
+
         // Input valideren
         $data = $request->validate([
             'leverdatum_tijd' => 'required|date',
@@ -227,7 +262,7 @@ class leveranciersController extends Controller
         // Check of leverancier nog actief is
         $id = $data['leverancier_id'];
         $checkIsActief = Leverancier::SP_CheckIfBedrijfIsActiefById($id);
-        
+
         // Als actief, SP uitvoeren om levering te updaten
         if($checkIsActief) {
             $result = Leverancier::SP_CreateLevering($data);

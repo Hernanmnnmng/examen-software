@@ -164,6 +164,7 @@
                                         </p>
                                     </div>
 
+                                    @if($leverancier->is_actief)
                                     <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                                         <a href="{{ route('leveranciers.editleverancier', $leverancier->id) }}" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold text-center transition-colors">
                                             Bijwerken
@@ -179,6 +180,13 @@
                                             </button>
                                         </form>
                                     </div>
+                                    @else
+                                    <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                                            Inactief - Niet bewerkbaar
+                                        </span>
+                                    </div>
+                                    @endif
                                 </div>
                             @empty
                                 <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
@@ -276,12 +284,16 @@
                                         </span>
                                     </td>
                                     <td class="px-4 sm:px-6 py-4 text-right space-x-2">
+                                        @if($levering->is_actief)
                                         <a href="{{ route('leveranciers.editlevering', $levering->id) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">Bijwerken</a>
                                         <form method="POST" action="{{ route('leveranciers.softDeletelevering', $levering->id) }}" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm" onclick="return confirm('Weet je zeker dat je deze levering wilt verwijderen?')">Verwijderen</button>
                                         </form>
+                                        @else
+                                        <span class="text-gray-400 text-sm">-</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -314,6 +326,7 @@
                                 ?>
                                 Volgende levering: {{ $formattedDate }}
                             </p>
+                            @if($levering->is_actief)
                             <div class="flex gap-2 pt-2">
                                 <a href="{{ route('leveranciers.editlevering', $levering->id) }}" class="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-semibold transition-colors">
                                     Bijwerken
@@ -326,6 +339,7 @@
                                     </button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                     @empty
                         <div class="p-4 text-center text-gray-500 dark:text-gray-400">

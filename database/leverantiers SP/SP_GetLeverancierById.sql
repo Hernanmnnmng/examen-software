@@ -5,9 +5,10 @@ CREATE PROCEDURE SP_GetLeverancierById(
     IN l_id INT
 )
 BEGIN
-    SELECT 
+    SELECT
         id,
-        bedrijfsnaam
+        bedrijfsnaam,
+        is_actief
     FROM leveranciers
     WHERE id = l_id;
 END $$

@@ -5,8 +5,8 @@ CREATE PROCEDURE SP_CheckIfBedrijfIsActiefById(
     IN l_id INT
 )
 BEGIN
-    SELECT 
-        IsActief
+    SELECT
+        is_actief
     FROM leveranciers
     WHERE id = l_id;
 END ??

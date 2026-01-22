@@ -3,9 +3,10 @@ DELIMITER ??
 
 CREATE PROCEDURE SP_GetAllLeveranciers()
 BEGIN
-    SELECT 
+    SELECT
         lvrn.id,
         lvrn.bedrijfsnaam,
+        lvrn.is_actief,
         adrs.straat,
         adrs.huisnummer,
         adrs.postcode,
@@ -14,9 +15,9 @@ BEGIN
         cprs.email,
         cprs.telefoon
     FROM leveranciers lvrn
-    INNER JOIN adressen adrs 
+    INNER JOIN adressen adrs
         ON lvrn.adres_id = adrs.id
-    INNER JOIN contactpersonen cprs 
+    INNER JOIN contactpersonen cprs
         ON lvrn.contactpersoon_id = cprs.id
     WHERE lvrn.is_actief = 1;
 END ??
