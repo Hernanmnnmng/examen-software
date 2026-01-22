@@ -5,6 +5,24 @@
         </h2>
     </x-slot>
 
+    {{-- <div class="pl-2 sm:pl-4">
+        @if (session('success'))
+            <div class="p-4 border border-green-600 bg-green-950/50 rounded-lg mt-1 shadow-xl mb-5" role="alert">
+                <h6 class="font-bold">{{ session('success') }}</h6>
+            </div>
+            <meta http-equiv="refresh" content="2;url={{ route('leveranciers.index') }}">
+        @endif
+    </div>
+
+    <div class="pl-2 sm:pl-4">
+        @if (session('error'))
+            <div class="p-4 border border-red-600 bg-red-950/50 rounded-lg mt-1 shadow-xl mb-5" role="alert">
+                <h6 class="font-bold">{{ session('error') }}</h6>
+            </div>
+            <meta http-equiv="refresh" content="2;url={{ route('leveranciers.index') }}">
+        @endif
+    </div> --}}
+
     <div class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
         <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
@@ -60,7 +78,7 @@
                             </div>
                             <div class="mt-4">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Telefoon</label>
-                                <input type="tel" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <input type="tel" pattern="^(\+31\s?0?6|0?6)\s?\d{8}$" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                             </div>
                         </div>
 
@@ -77,7 +95,10 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Postcode</label>
-                                    <input type="text" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="text" pattern="^[1-9][0-9]{3}\s?[A-Z]{2}$" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    @error('postcode')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Plaats</label>
@@ -95,70 +116,76 @@
             </div>
 
             <!-- Leveranciers Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                @forelse ($leveranciers as $leverancier)
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-5 space-y-4 hover:shadow-lg transition-shadow">
-                        <div class="flex flex-col sm:flex-row sm:items-start gap-3">
-                            <div class="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded flex items-center justify-center flex-shrink-0">
-                                <svg class="h-6 w-6 text-green-800 dark:text-green-200" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M4 20V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                    <path d="M8 8h4M8 11h4M8 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                    <path d="M18 20v-9a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                    <path d="M10 20v-3h2v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h2 class="font-semibold text-base sm:text-lg truncate">{{ $leverancier->bedrijfsnaam }}</h2>
-                                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                                    {{ $leverancier->straat }} {{ $leverancier->huisnummer }}, {{ $leverancier->postcode }} {{ $leverancier->plaats }}
-                                </p>
-                            </div>
-                        </div>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="overflow-x-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            @forelse ($leveranciers as $leverancier)
+                                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-5 space-y-4 hover:shadow-lg transition-shadow">
+                                    <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+                                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded flex items-center justify-center flex-shrink-0">
+                                            <svg class="h-6 w-6 text-green-800 dark:text-green-200" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M4 20V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                                <path d="M8 8h4M8 11h4M8 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                                <path d="M18 20v-9a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                                <path d="M10 20v-3h2v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h2 class="font-semibold text-base sm:text-lg truncate">{{ $leverancier->bedrijfsnaam }}</h2>
+                                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                {{ $leverancier->straat }} {{ $leverancier->huisnummer }}, {{ $leverancier->postcode }} {{ $leverancier->plaats }}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                        <div class="text-xs sm:text-sm space-y-2 text-gray-700 dark:text-gray-300">
-                            <p class="flex items-center gap-2 min-w-0">
-                                <svg class="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                    <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <span class="truncate">{{ $leverancier->contact_naam }}</span>
-                            </p>
-                            <p class="flex items-center gap-2 min-w-0">
-                                <svg class="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                                    <path d="m4.5 7 7.1 5.1c.8.6 1.9.6 2.7 0L21.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <a href="mailto:{{ $leverancier->email }}" class="text-blue-600 dark:text-blue-400 hover:underline truncate">{{ $leverancier->email }}</a>
-                            </p>
-                            <p class="flex items-center gap-2 min-w-0">
-                                <svg class="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M4.5 5.5c0 8 6 14 14 14l2-2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.6-.2l-1.4 1a13.1 13.1 0 0 1-5.2-5.2l1-1.4a2 2 0 0 0-.2-2.6L9.3 4.5a2 2 0 0 0-2.8 0l-2 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <a href="tel:{{ $leverancier->telefoon }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $leverancier->telefoon }}</a>
-                            </p>
-                        </div>
+                                    <div class="text-xs sm:text-sm space-y-2 text-gray-700 dark:text-gray-300">
+                                        <p class="flex items-center gap-2 min-w-0">
+                                            <svg class="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                                <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <span class="truncate">{{ $leverancier->contact_naam }}</span>
+                                        </p>
+                                        <p class="flex items-center gap-2 min-w-0">
+                                            <svg class="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                                                <path d="m4.5 7 7.1 5.1c.8.6 1.9.6 2.7 0L21.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <a href="mailto:{{ $leverancier->email }}" class="text-blue-600 dark:text-blue-400 hover:underline truncate">{{ $leverancier->email }}</a>
+                                        </p>
+                                        <p class="flex items-center gap-2 min-w-0">
+                                            <svg class="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M4.5 5.5c0 8 6 14 14 14l2-2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.6-.2l-1.4 1a13.1 13.1 0 0 1-5.2-5.2l1-1.4a2 2 0 0 0-.2-2.6L9.3 4.5a2 2 0 0 0-2.8 0l-2 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <a href="tel:{{ $leverancier->telefoon }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $leverancier->telefoon }}</a>
+                                        </p>
+                                    </div>
 
-                        <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <a href="{{ route('leveranciers.editleverancier', $leverancier->id) }}" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold text-center transition-colors">
-                                Bijwerken
-                            </a>
-                            <form method="POST" action="{{ route('leveranciers.softDeleteleverancier', $leverancier->id) }}" class="flex-1">
-                                @csrf
-                                @method('DELETE')
-                                <button
-                                    type="submit"
-                                    class="w-full bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors"
-                                    onclick="return confirm('Weet je zeker dat je deze leverancier wilt verwijderen?')">
-                                    Verwijderen
-                                </button>
-                            </form>
+                                    <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <a href="{{ route('leveranciers.editleverancier', $leverancier->id) }}" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold text-center transition-colors">
+                                            Bijwerken
+                                        </a>
+                                        <form method="POST" action="{{ route('leveranciers.softDeleteleverancier', $leverancier->id) }}" class="flex-1">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button
+                                                type="submit"
+                                                class="w-full bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors"
+                                                onclick="return confirm('Weet je zeker dat je deze leverancier wilt verwijderen?')">
+                                                Verwijderen
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                                    <p class="text-lg">Er zijn momenteel nog geen leveranciers geregistreerd.</p>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
-                @empty
-                    <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-                        <p class="text-lg">Er zijn momenteel nog geen leveranciers geregistreerd.</p>
-                    </div>
-                @endforelse
+                </div>
             </div>
 
             <!-- New Levering Modal -->
