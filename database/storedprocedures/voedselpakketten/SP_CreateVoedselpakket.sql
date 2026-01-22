@@ -18,6 +18,3 @@ END$$
 
 DELIMITER ;
 
-CALL SP_CreateVoedselpakket(
-1,'vp0000000005'
-);
