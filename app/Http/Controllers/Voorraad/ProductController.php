@@ -216,6 +216,17 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
+        // Check of product gebruikt wordt in voedselpakketten
+        $checkIsUsed = Product::SP_CheckIfProductIsUsedInVoedselpakket((int) $id);
+        $count = $checkIsUsed[0]->totaal ?? 0;
+
+        // Als product gebruikt wordt, blokkeren
+        if ($count > 0) {
+            return redirect()->back()->with(
+                'error', 'Product kan niet worden verwijderd, het is al gebruikt in een voedselpakket'
+            );
+        }
+
         // Soft-delete uitvoeren op product
         $affected = Product::SoftDeleteProductById((int) $id);
 

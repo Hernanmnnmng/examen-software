@@ -148,6 +148,26 @@ class Product extends Model
         }
     }
 
+    // Check of product gebruikt wordt in voedselpakketten
+    static public function SP_CheckIfProductIsUsedInVoedselpakket($id)
+    {
+        try {
+            // log begin
+            Log::info('SP_CheckIfProductIsUsedInVoedselpakket gestart', ['id' => $id]);
+            // resultaten in $result zetten
+            $result = DB::select('CALL SP_CheckIfProductIsUsedInVoedselpakket(?)', [$id]);
+            // log success
+            Log::info('SP_CheckIfProductIsUsedInVoedselpakket succesvol uitgevoerd');
+            // result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SP_CheckIfProductIsUsedInVoedselpakket', ['error' => $e->getMessage()]);
+            // lege array terug geven zodat de app niet kapot gaat
+            return [];
+        }
+    }
+
     static public function SoftDeleteProductById(int $id): int
     {
         try {

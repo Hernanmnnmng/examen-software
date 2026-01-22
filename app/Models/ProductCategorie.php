@@ -122,6 +122,26 @@ class ProductCategorie extends Model
         }
     }
 
+    // Check of categorie gebruikt wordt in producten
+    static public function SP_CheckIfCategorieIsUsedInProducten($id)
+    {
+        try {
+            // log begin
+            Log::info('SP_CheckIfCategorieIsUsedInProducten gestart', ['id' => $id]);
+            // resultaten in $result zetten
+            $result = DB::select('CALL SP_CheckIfCategorieIsUsedInProducten(?)', [$id]);
+            // log success
+            Log::info('SP_CheckIfCategorieIsUsedInProducten succesvol uitgevoerd');
+            // result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SP_CheckIfCategorieIsUsedInProducten', ['error' => $e->getMessage()]);
+            // lege array terug geven zodat de app niet kapot gaat
+            return [];
+        }
+    }
+
     static public function SoftDeleteCategorieById(int $id): int
     {
         try {

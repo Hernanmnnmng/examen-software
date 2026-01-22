@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Voorraad;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ProductCategorie;
+use App\Models\Product;
 
 class CategoryController extends Controller
 {
@@ -137,6 +138,17 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
+        // Check of categorie gebruikt wordt in producten
+        $checkIsUsed = ProductCategorie::SP_CheckIfCategorieIsUsedInProducten((int) $id);
+        $count = $checkIsUsed[0]->totaal ?? 0;
+
+        // Als categorie gebruikt wordt, blokkeren
+        if ($count > 0) {
+            return redirect()->back()->with(
+                'error', 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld'
+            );
+        }
+
         // Soft-delete uitvoeren op categorie
         $affected = ProductCategorie::SoftDeleteCategorieById((int) $id);
 
