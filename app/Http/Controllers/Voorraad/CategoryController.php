@@ -3,236 +3,148 @@
 namespace App\Http\Controllers\Voorraad;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\ProductCategorie;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
-use Throwable;
+use App\Models\ProductCategorie;
 
-/**
- * Voorraadbeheer: Category CRUD.
- *
- * Notes (Hernan Martino Molina):
- * - Uses MySQL stored procedures when available.
- * - Falls back to Query Builder for SQLite/testing or when SPs are missing.
- */
 class CategoryController extends Controller
 {
     /**
-     * List active categories.
+     * Display a listing of the resource.
      */
-    public function index(): View
+    public function index()
     {
-        $categorieen = [];
+        // Alleen actieve categorieen ophalen (soft-deleted categorieen worden verborgen)
+        $categorieen = ProductCategorie::SP_GetAllCategorieen();
 
-        try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                try {
-                    $categorieen = DB::select('CALL sp_category_list()');
-                } catch (QueryException $e) {
-                    $errorInfo = $e->errorInfo;
-                    $mysqlCode = is_array($errorInfo) ? ($errorInfo[1] ?? null) : null;
-                    if ((int) $mysqlCode !== 1305) {
-                        throw $e;
-                    }
-                    // // Fall back if procedure doesn't exist (Eloquent model)
-                    // $categorieen = ProductCategorie::query()
-                    //     ->active()
-                    //     ->orderBy('naam', 'asc')
-                    //     ->get(['id', 'naam']);
-                }
-            } else {
-                $categorieen = ProductCategorie::query()
-                    ->active()
-                    ->orderBy('naam', 'asc')
-                    ->get(['id', 'naam']);
-            }
-        } catch (Throwable $e) {
-            report($e);
-            session()->flash('error', 'Kon categorieën niet laden.');
-            $categorieen = [];
-        }
-
+        // View laden met alle categorieen
         return view('voorraad.categorieen.index', [
-            'categorieen' => $categorieen,
+            'categorieen' => $categorieen
         ]);
     }
 
     /**
-     * Show create form.
+     * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
         return view('voorraad.categorieen.create');
     }
 
     /**
-     * Create a category.
+     * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'naam' => ['required', 'string', 'max:100'],
+        // Data valideren van formulier input
+        $data = $request->validate([
+            'naam' => 'required|string|max:100'
         ]);
 
-        try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_category_create(?)', [$validated['naam']]);
-            } else {
-                ProductCategorie::query()->create([
-                    'naam' => $validated['naam'],
-                    'is_actief' => 1,
-                ]);
-            }
+        // Categorienaam apart opslaan voor check
+        $naam = $data['naam'];
 
-            return redirect()
-                ->route('voorraad.categorieen.index')
-                ->with('success', 'Categorie aangemaakt');
-        } catch (QueryException $e) {
-            report($e);
-            return back()
-                ->withInput()
-                ->with('error', $this->friendlyDbMessage($e));
-        } catch (Throwable $e) {
-            report($e);
-            return back()->withInput()->with('error', 'Categorie aanmaken mislukt');
-        }
-    }
+        // Checken of de categorienaam al bestaat via stored procedure
+        $checkNameExists = ProductCategorie::SP_GetCategorieByNaam($naam);
 
-    /**
-     * Show edit form.
-     */
-    public function edit(int $id): View
-    {
-        $categorie = null;
+        // Resultaat in $count zetten (0 = bestaat niet, >0 = bestaat)
+        $count = $checkNameExists[0]->totaal ?? 0;
 
-        if (DB::connection()->getDriverName() === 'mysql') {
-            // category_get not needed; list is small
-            $rows = DB::select('CALL sp_category_list()');
-            foreach ($rows as $row) {
-                if ((int) $row->id === $id) {
-                    $categorie = $row;
-                    break;
-                }
-            }
+        // Als naam al bestaat, terug met foutmelding
+        // Zo niet, categorie aanmaken
+        if ($count > 0) {
+            return redirect()->back()->with(
+                'error', 'deze categorie bestaat al'
+            );
         } else {
-            $categorie = ProductCategorie::query()->where('id', $id)->first();
+            $result = ProductCategorie::SP_CreateCategorie($data);
         }
 
-        abort_if(! $categorie, 404);
+        // Meldingen geven op basis van resultaat
+        if($result) {
+            return redirect()->back()->with(
+                'success', 'categorie succesvol toegevoegd'
+            );
+        } else {
+            return redirect()->back()->with(
+                'error', 'categorie niet succesvol toegevoegd'
+            );
+        }
+    }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        // Huidige categorie ophalen
+        $categorie = ProductCategorie::SP_GetCategorieById($id);
+
+        // Checken of categorie bestaat
+        if (!$categorie) {
+            return redirect()->route('voorraad.categorieen.index')
+                ->with('error', 'Categorie niet gevonden');
+        }
+
+        // Edit view laden
         return view('voorraad.categorieen.edit', [
-            'categorie' => $categorie,
+            'categorie' => $categorie
         ]);
     }
 
     /**
-     * Update a category.
+     * Update the specified resource in storage.
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'naam' => ['required', 'string', 'max:100'],
+        // Input valideren
+        $data = $request->validate([
+            'naam' => 'required|string|max:100'
         ]);
 
-        try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_category_update(?, ?)', [$id, $validated['naam']]);
-            } else {
-                ProductCategorie::query()->where('id', $id)->update([
-                    'naam' => $validated['naam'],
-                ]);
-            }
+        // Categorienaam apart opslaan voor check
+        $naam = $data['naam'];
 
-            return redirect()
-                ->route('voorraad.categorieen.index')
-                ->with('success', 'Categorie gewijzigd');
-        } catch (QueryException $e) {
-            report($e);
-            return back()
-                ->withInput()
-                ->with('error', $this->friendlyDbMessage($e));
-        } catch (Throwable $e) {
-            report($e);
-            return back()->withInput()->with('error', 'Categorie wijzigen mislukt');
+        // Checken of de categorienaam al bestaat via stored procedure
+        $checkNameExists = ProductCategorie::SP_GetCategorieByNaam($naam);
+
+        // Resultaat in $count zetten (0 = bestaat niet, >0 = bestaat)
+        $count = $checkNameExists[0]->totaal ?? 0;
+
+        // Huidige categorie ophalen om te checken of naam hetzelfde is
+        $currentCategorie = ProductCategorie::SP_GetCategorieById($id);
+
+        // Als naam gewijzigd is en al bestaat
+        if ($currentCategorie && $currentCategorie->naam !== $naam && $count > 0) {
+            return redirect()->back()->with(
+                'error', 'deze categorie bestaat al'
+            );
+        }
+
+        // id toevoegen aan data array
+        $data['id'] = $id;
+        $updated = ProductCategorie::SP_UpdateCategorie($data);
+
+        // Succes/foutmelding teruggeven
+        if($updated) {
+            return redirect()->route('voorraad.categorieen.index')->with('success', 'Categorie succesvol geüpdatet.');
+        } else {
+            return redirect()->back()->with('error', 'Er ging iets mis bij het updaten.');
         }
     }
 
     /**
-     * Delete a category.
+     * Remove the specified resource from storage.
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy($id)
     {
-        try {
-            if (DB::connection()->getDriverName() === 'mysql') {
-                DB::select('CALL sp_category_delete(?)', [$id]);
-            } else {
-                // SQLite/testing fallback: block if products exist
-                $count = (int) Product::query()->where('categorie_id', $id)->count();
-                if ($count > 0) {
-                    return redirect()
-                        ->route('voorraad.categorieen.index')
-                        ->with('error', 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld');
-                }
+        // Soft-delete uitvoeren op categorie
+        $affected = ProductCategorie::SoftDeleteCategorieById((int) $id);
 
-                ProductCategorie::query()->where('id', $id)->delete();
-            }
-
-            return redirect()
-                ->route('voorraad.categorieen.index')
-                ->with('success', 'Categorie verwijderd');
-        } catch (QueryException $e) {
-            report($e);
-            return redirect()
-                ->route('voorraad.categorieen.index')
-                ->with('error', $this->friendlyDbMessage($e));
-        } catch (Throwable $e) {
-            report($e);
-            return redirect()
-                ->route('voorraad.categorieen.index')
-                ->with('error', 'Categorie verwijderen mislukt');
-        }
-    }
-
-    /**
-     * Convert low-level DB exceptions to a user-facing message.
-     */
-    private function friendlyDbMessage(QueryException $e): string
-    {
-        $message = $e->getMessage();
-        $lowerMsg = strtolower($message);
-
-        // MySQL stored procedure sp_category_delete blocks delete if products exist
-        // and raises SQLSTATE 45000 with a custom message.
-        if (
-            $e->getCode() === '45000' ||
-            str_contains($lowerMsg, 'categorie kan niet worden verwijderd')
-        ) {
-            return 'Categorie kan niet worden verwijderd, er zijn producten aan gekoppeld';
+        // Succes/foutmelding tonen
+        if ($affected > 0) {
+            return redirect()->back()->with('success', 'categorie succesvol verwijderd');
         }
 
-        if (
-            str_contains($lowerMsg, 'integrity constraint') ||
-            str_contains($lowerMsg, 'foreign key') ||
-            str_contains($lowerMsg, 'constraint fails')
-        ) {
-            return 'Categorie kan niet worden verwijderd omdat het gekoppeld is aan andere gegevens.';
-        }
-
-        if (str_contains($lowerMsg, 'categorie bestaat al')) {
-            return 'Categorie bestaat al';
-        }
-
-        if (str_contains($lowerMsg, 'unique') || str_contains($lowerMsg, 'duplicate')) {
-            return 'Categorie bestaat al';
-        }
-
-        $info = $e->errorInfo;
-        $sqlState = is_array($info) ? ($info[0] ?? null) : null;
-        return 'Er ging iets mis bij het opslaan (SQL Code: ' . ($sqlState ?? $e->getCode()) . ').';
+        return redirect()->back()->with('error', 'categorie niet gevonden of al verwijderd');
     }
 }
-

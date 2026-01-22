@@ -2,179 +2,168 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class Product extends Model
 {
-    use HasFactory;
-
-    protected $table = 'producten';
-
-    protected $fillable = [
-        'product_naam',
-        'categorie_id',
-        'ean',
-        'aantal_voorraad',
-        'is_actief',
-        'opmerking',
-    ];
-
-    protected $casts = [
-        'categorie_id' => 'integer',
-        'aantal_voorraad' => 'integer',
-        'is_actief' => 'boolean',
-        'datum_aangemaakt' => 'datetime',
-        'datum_gewijzigd' => 'datetime',
-    ];
-
-    public const CREATED_AT = 'datum_aangemaakt';
-    public const UPDATED_AT = 'datum_gewijzigd';
-
-    public function scopeActive($query)
+    // All active products ophalen uit de database (voorraad beheer)
+    static public function SP_GetAllProductenVoorraad()
     {
-        return $query->where('is_actief', '=', 1);
-    }
-
-    public function categorie(): BelongsTo
-    {
-        return $this->belongsTo(ProductCategorie::class, 'categorie_id', 'id');
-    }
-
-    /**
-     * Stored Procedure Wrappers / Data Access Methods
-     * These handle the choice between MySQL SPs and SQLite/Eloquent fallback.
-     */
-
-    public static function listProducts(?string $ean, string $sort, string $dir): array
-    {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            try {
-                return DB::select('CALL sp_product_list(?, ?, ?)', [
-                    $ean !== '' ? $ean : null,
-                    $sort,
-                    $dir,
-                ]);
-            } catch (QueryException $e) {
-                // Return empty if SP missing (exam fallback safety)
-                if ((int) ($e->errorInfo[1] ?? 0) !== 1305) throw $e;
-            }
+        try {
+            // log dat het is begonnen
+            Log::info('SP_GetAllProductenVoorraad gestart');
+            // resultaten in $result zetten
+            $result = DB::select('CALL SP_GetAllProductenVoorraad()');
+            // log dat het succesvol was
+            Log::info('SP_GetAllProductenVoorraad succesvol uitgevoerd');
+            // $result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SP_GetAllProductenVoorraad', ['error' => $e->getMessage()]);
+            // lege array terug geven zodat de app niet kapot gaat
+            return [];
         }
-
-        // Eloquent fallback
-        $query = self::query()
-            ->from('producten as p')
-            ->join('product_categorieen as c', 'c.id', '=', 'p.categorie_id')
-            ->select([
-                'p.id',
-                'p.product_naam',
-                'p.ean',
-                'p.aantal_voorraad',
-                'p.categorie_id',
-                DB::raw('c.naam as categorie_naam'),
-            ])
-            ->where('p.is_actief', '=', 1)
-            ->where('c.is_actief', '=', 1);
-
-        if ($ean !== '') {
-            $query->where('p.ean', '=', $ean);
-        }
-
-        $sortColumn = match ($sort) {
-            'ean' => 'p.ean',
-            'categorie' => 'c.naam',
-            'aantal_voorraad' => 'p.aantal_voorraad',
-            default => 'p.product_naam',
-        };
-
-        return $query->orderBy($sortColumn, $dir)->get()->all();
     }
 
-    public static function createProduct(array $data): int
+    // Product ophalen via id met SP_GetProductById
+    static public function SP_GetProductById($id)
     {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $rows = DB::select('CALL sp_product_create(?, ?, ?, ?)', [
+        try {
+            // log begin ophalen product
+            Log::info('SP_GetProductById gestart', ['id' => $id]);
+
+            // stored procedure uitvoeren
+            $result = DB::select('CALL SP_GetProductById(?)', [$id]);
+
+            // log succes
+            Log::info('SP_GetProductById succesvol uitgevoerd');
+
+            // eerste record teruggeven of null als leeg
+            return $result[0] ?? null;
+
+        } catch (\Throwable $e) {
+            // log foutmelding
+            Log::error('Fout in SP_GetProductById', ['error' => $e->getMessage()]);
+
+            // null teruggeven bij fout
+            return null;
+        }
+    }
+
+    // Function om product op te halen op naam om te checken of die al bestaat
+    static public function SP_GetProductByNaam($naam)
+    {
+        try {
+            // log begin
+            Log::info('SP_GetProductByNaam gestart', ['naam' => $naam]);
+            // resultaten in $result zetten
+            $result = DB::select('CALL SP_GetProductByNaam(?)', [$naam]);
+            
+            Log::info('SP_GetProductByNaam succesvol uitgevoerd');
+            // result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SP_GetProductByNaam', ['error' => $e->getMessage()]);
+            // lege array terug geven zodat de app niet kapot gaat
+            return [];
+        }
+    }
+
+    // Function om product op te halen op EAN om te checken of die al bestaat
+    static public function SP_GetProductByEan($ean)
+    {
+        try {
+            // log begin
+            Log::info('SP_GetProductByEan gestart', ['ean' => $ean]);
+            // resultaten in $result zetten
+            $result = DB::select('CALL SP_GetProductByEan(?)', [$ean]);
+            
+            Log::info('SP_GetProductByEan succesvol uitgevoerd');
+            // result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SP_GetProductByEan', ['error' => $e->getMessage()]);
+            // lege array terug geven zodat de app niet kapot gaat
+            return [];
+        }
+    }
+
+    static public function SP_CreateProduct($data)
+    {
+        try {
+            // log begin
+            Log::info('SP_CreateProduct gestart', ['data' => $data]);
+            // resultaten in $result zetten
+            $result = DB::statement('CALL SP_CreateProduct(?, ?, ?, ?)', [
                 $data['product_naam'],
                 $data['ean'],
-                (int) $data['categorie_id'],
-                (int) $data['aantal_voorraad'],
+                $data['categorie_id'],
+                $data['aantal_voorraad'],
             ]);
-            return (int) ($rows[0]->id ?? 0);
+            // log success
+            Log::info('SP_CreateProduct succesvol uitgevoerd');
+            // result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SP_CreateProduct', ['error' => $e->getMessage()]);
+            // leeg terug geven zodat de app niet kapot gaat
+            return false;
         }
-
-        // Eloquent fallback
-        $product = self::query()->create([
-            'product_naam' => $data['product_naam'],
-            'ean' => $data['ean'],
-            'categorie_id' => (int) $data['categorie_id'],
-            'aantal_voorraad' => (int) $data['aantal_voorraad'],
-            'is_actief' => 1,
-        ]);
-
-        return $product->id;
     }
 
-    public static function getProduct(int $id): ?object
+    // Bestaand product bijwerken via SP_UpdateProduct
+    static public function SP_UpdateProduct($data)
     {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            try {
-                $rows = DB::select('CALL sp_product_get(?)', [$id]);
-                return $rows[0] ?? null;
-            } catch (QueryException $e) {
-                if ((int) ($e->errorInfo[1] ?? 0) !== 1305) throw $e;
-            }
-        }
+        try {
+            // log begin update met meegegeven data
+            Log::info('SP_UpdateProduct gestart', ['data' => $data]);
 
-        return self::query()->where('id', $id)->first();
-    }
-
-    public static function updateProduct(int $id, array $data): bool
-    {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $res = DB::select('CALL sp_product_update(?, ?, ?, ?, ?)', [
-                $id,
-                $data['product_naam'],
-                $data['ean'],
-                (int) $data['categorie_id'],
-                (int) $data['aantal_voorraad'],
+            // de stored procedure uitvoeren met alle parameters
+            $result = DB::statement('CALL SP_UpdateProduct(?, ?, ?, ?, ?)', [
+                $data['id'],             // id van het product
+                $data['product_naam'],   // nieuwe productnaam
+                $data['ean'],            // nieuwe EAN
+                $data['categorie_id'],  // nieuwe categorie
+                $data['aantal_voorraad'] // nieuwe voorraad
             ]);
-            // Returns affected rows
-             return isset($res[0]->affected);
-        }
 
-        return (bool) self::query()->where('id', $id)->update([
-            'product_naam' => $data['product_naam'],
-            'ean' => $data['ean'],
-            'categorie_id' => (int) $data['categorie_id'],
-            'aantal_voorraad' => (int) $data['aantal_voorraad'],
-        ]);
+            // loggen dat update succesvol is uitgevoerd
+            Log::info('SP_UpdateProduct succesvol uitgevoerd');
+
+            // resultaat teruggeven
+            return $result;
+
+        } catch (\Throwable $e) {
+            // loggen van foutmelding
+            Log::error('Fout in SP_UpdateProduct', ['error' => $e->getMessage()]);
+
+            // false teruggeven zodat de app niet crasht
+            return false;
+        }
     }
 
-    public static function deleteProduct(int $id): bool
+    static public function SoftDeleteProductById(int $id): int
     {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $res = DB::select('CALL sp_product_delete(?)', [$id]);
-            return isset($res[0]->affected);
+        try {
+            // log begin
+            Log::info('SoftDeleteProductById gestart', ['id' => $id]);
+            // resultaten in $result zetten
+            $result = DB::update('UPDATE producten SET is_actief = 0 WHERE id = ?', [$id]);
+            // log success
+            Log::info('SoftDeleteProductById succesvol uitgevoerd');
+            // result terug geven
+            return $result;
+        } catch (\Throwable $e) {
+            //log dat het fout is gegaan en waar precies en wat er fout is gegaan
+            Log::error('Fout in SoftDeleteProductById', ['error' => $e->getMessage()]);
+            // leeg terug geven zodat de app niet kapot gaat
+            return 0;
         }
-
-        // Eloquent fallback with check
-        if (Schema::hasTable('voedselpakket_producten')) {
-            $usedCount = (int) DB::table('voedselpakket_producten')
-                ->where('product_id', $id)
-                ->count();
-
-            if ($usedCount > 0) {
-                // Simulate the MySQL signal error for consistency
-                throw new \Exception('Product kan niet worden verwijderd, het is al gebruikt in een voedselpakket');
-            }
-        }
-
-        return (bool) self::query()->where('id', $id)->delete();
     }
 }
-
