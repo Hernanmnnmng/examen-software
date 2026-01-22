@@ -32,11 +32,11 @@
                     <h1 class="text-2xl sm:text-3xl font-bold">Leveranciers</h1>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Beheer leveranciers en leveringsschema's</p>
                 </div>
-                <a
-                    href="{{ route('leveranciers.createLeverancier') }}"
-                    class="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors text-center">
+                <button
+                    onclick="showNewLeverancierForm()"
+                    class="w-full sm:w-auto bg-black text-white dark:bg-gray-100 dark:text-black px-4 py-2 rounded-md text-sm font-semibold hover:bg-black/80 dark:hover:bg-gray-200 transition-colors">
                     + Nieuwe Leverancier
-                </a>
+                </button>
             </div>
 
             <!-- New Leverancier Modal -->
@@ -59,7 +59,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Bedrijfsnaam</label>
-                                    <input type="text" name="bedrijfsnaam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="text" name="bedrijfsnaam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                             </div>
                         </div>
@@ -69,16 +69,16 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Contactpersoon</label>
-                                    <input type="text" name="contact_naam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="text" name="contact_naam" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                                    <input type="email" name="email" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="email" name="email" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                             </div>
                             <div class="mt-4">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Telefoon</label>
-                                <input type="tel" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                <input type="tel" name="telefoon" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                             </div>
                         </div>
 
@@ -87,19 +87,19 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Straat</label>
-                                    <input type="text" name="straat" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="text" name="straat" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Huisnummer</label>
-                                    <input type="text" name="huisnummer" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="text" name="huisnummer" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Postcode</label>
-                                    <input type="text" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="text" name="postcode" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Plaats</label>
-                                    <input type="text" name="plaats" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                                    <input type="text" name="plaats" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                             </div>
                         </div>
@@ -126,17 +126,7 @@
                                 </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                @php
-                                    $leverancierIsActief = (bool) ($leverancier->is_actief ?? 1);
-                                @endphp
-                                <div class="flex items-start justify-between gap-2">
-                                    <h2 class="font-semibold text-base sm:text-lg truncate">{{ $leverancier->bedrijfsnaam }}</h2>
-                                    @if(! $leverancierIsActief)
-                                        <span class="inline-flex items-center rounded-full px-2 py-1 text-[11px] font-semibold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 flex-shrink-0">
-                                            NIET ACTIEF
-                                        </span>
-                                    @endif
-                                </div>
+                                <h2 class="font-semibold text-base sm:text-lg truncate">{{ $leverancier->bedrijfsnaam }}</h2>
                                 <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                                     {{ $leverancier->straat }} {{ $leverancier->huisnummer }}, {{ $leverancier->postcode }} {{ $leverancier->plaats }}
                                 </p>
@@ -166,29 +156,21 @@
                             </p>
                         </div>
 
-                        @if($leverancierIsActief)
-                            <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <a href="{{ route('leveranciers.editleverancier', $leverancier->id) }}" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold text-center transition-colors">
-                                    Bijwerken
-                                </a>
-                                <form method="POST" action="{{ route('leveranciers.softDeleteleverancier', $leverancier->id) }}" class="flex-1">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button
-                                        type="submit"
-                                        class="w-full bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors"
-                                        onclick="return confirm('Weet je zeker dat je deze leverancier wilt verwijderen?')">
-                                        Verwijderen
-                                    </button>
-                                </form>
-                            </div>
-                        @else
-                            <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    Deze leverancier is niet actief.
-                                </p>
-                            </div>
-                        @endif
+                        <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <a href="{{ route('leveranciers.editleverancier', $leverancier->id) }}" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold text-center transition-colors">
+                                Bijwerken
+                            </a>
+                            <form method="POST" action="{{ route('leveranciers.softDeleteleverancier', $leverancier->id) }}" class="flex-1">
+                                @csrf
+                                @method('DELETE')
+                                <button
+                                    type="submit"
+                                    class="w-full bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors"
+                                    onclick="return confirm('Weet je zeker dat je deze leverancier wilt verwijderen?')">
+                                    Verwijderen
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 @empty
                     <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
@@ -216,10 +198,7 @@
                             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Bedrijf</label>
                             <select name="leverancier_id" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 @forelse ($leveranciers as $leverancier)
-                                    @php $isActief = (bool) ($leverancier->is_actief ?? 1); @endphp
-                                    <option value="{{ $leverancier->id }}" @if(! $isActief) disabled @endif>
-                                        {{ $leverancier->bedrijfsnaam }}@if(! $isActief) (NIET ACTIEF) @endif
-                                    </option>
+                                    <option value="{{ $leverancier->id }}">{{ $leverancier->bedrijfsnaam }}</option>
                                 @empty
                                     <option value="0">Geen bedrijven geregistreerd</option>
                                 @endforelse
@@ -228,12 +207,12 @@
 
                         <div>
                             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Leverdatum & tijd</label>
-                            <input type="datetime-local" name="leverdatum_tijd" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                            <input type="datetime-local" name="leverdatum_tijd" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
 
                         <div>
                             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Eerstvolgende levering</label>
-                            <input type="datetime-local" name="eerstvolgende_levering" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required/>
+                            <input type="datetime-local" name="eerstvolgende_levering" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
 
                         <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -279,30 +258,17 @@
                                         {{ $formattedDate }}
                                     </td>
                                     <td class="px-4 sm:px-6 py-4">
-                                        @php
-                                            // Some DB/SP queries may not return `is_actief`.
-                                            // Default to "Actief" so the page never crashes.
-                                            $leveringIsActief = (bool) ($levering->is_actief ?? 1);
-                                            // Some DB/SP queries may not return `id` (e.g. different alias).
-                                            $leveringId = $levering->id ?? ($levering->levering_id ?? null);
-                                        @endphp
-                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $leveringIsActief ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' }}">
-                                            {{ $leveringIsActief ? 'Actief' : 'NIET ACTIEF' }}
+                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $levering->is_actief ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' }}">
+                                            {{ $levering->is_actief ? 'Actief' : 'Inactief' }}
                                         </span>
                                     </td>
                                     <td class="px-4 sm:px-6 py-4 text-right space-x-2">
-                                        @if($leveringId && $leveringIsActief)
-                                            <a href="{{ route('leveranciers.editlevering', $leveringId) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">Bijwerken</a>
-                                            <form method="POST" action="{{ route('leveranciers.softDeletelevering', $leveringId) }}" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm" onclick="return confirm('Weet je zeker dat je deze levering wilt verwijderen?')">Verwijderen</button>
-                                            </form>
-                                        @elseif(!$leveringIsActief)
-                                            <span class="text-gray-400 text-sm">—</span>
-                                        @else
-                                            <span class="text-gray-400 text-sm">—</span>
-                                        @endif
+                                        <a href="{{ route('leveranciers.editlevering', $levering->id) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">Bijwerken</a>
+                                        <form method="POST" action="{{ route('leveranciers.softDeletelevering', $levering->id) }}" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm" onclick="return confirm('Weet je zeker dat je deze levering wilt verwijderen?')">Verwijderen</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty
@@ -325,13 +291,8 @@
                                     <h3 class="font-semibold text-sm sm:text-base truncate">{{ $levering->bedrijfsnaam }}</h3>
                                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $levering->contact_naam }}</p>
                                 </div>
-                                @php
-                                    // Keep mobile view consistent with table view.
-                                    $leveringIsActief = (bool) ($levering->is_actief ?? 1);
-                                    $leveringId = $levering->id ?? ($levering->levering_id ?? null);
-                                @endphp
-                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold flex-shrink-0 {{ $leveringIsActief ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' }}">
-                                    {{ $leveringIsActief ? 'Actief' : 'NIET ACTIEF' }}
+                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold flex-shrink-0 {{ $levering->is_actief ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' }}">
+                                    {{ $levering->is_actief ? 'Actief' : 'Inactief' }}
                                 </span>
                             </div>
                             <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -341,22 +302,16 @@
                                 Volgende levering: {{ $formattedDate }}
                             </p>
                             <div class="flex gap-2 pt-2">
-                                @if($leveringId && $leveringIsActief)
-                                    <a href="{{ route('leveranciers.editlevering', $leveringId) }}" class="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-semibold transition-colors">
-                                        Bijwerken
-                                    </a>
-                                    <form method="POST" action="{{ route('leveranciers.softDeletelevering', $leveringId) }}" class="flex-1">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded text-xs font-semibold transition-colors" onclick="return confirm('Weet je zeker dat je deze levering wilt verwijderen?')">
-                                            Verwijderen
-                                        </button>
-                                    </form>
-                                @elseif(!$leveringIsActief)
-                                    <span class="flex-1 text-center text-gray-400 text-xs py-1.5">—</span>
-                                @else
-                                    <span class="flex-1 text-center text-gray-400 text-xs py-1.5">—</span>
-                                @endif
+                                <a href="{{ route('leveranciers.editlevering', $levering->id) }}" class="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-semibold transition-colors">
+                                    Bijwerken
+                                </a>
+                                <form method="POST" action="{{ route('leveranciers.softDeletelevering', $levering->id) }}" class="flex-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded text-xs font-semibold transition-colors" onclick="return confirm('Weet je zeker dat je deze levering wilt verwijderen?')">
+                                        Verwijderen
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     @empty
