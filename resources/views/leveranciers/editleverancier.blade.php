@@ -6,6 +6,11 @@
     </x-slot>
 
     <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        @if(session('error'))
+            <div class="p-4 mb-6 border border-red-600 bg-red-950/50 rounded-lg">
+                <p class="text-red-100">{{ session('error') }}</p>
+            </div>
+        @endif
 
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
             <form method="POST" action="{{ route('leveranciers.updateleverancier', $leverancier->id) }}" class="space-y-6">
