@@ -111,6 +111,11 @@ Route::middleware(['auth', 'role:Directie'])->prefix('admin')->name('admin.')->g
     Route::resource('users', UserController::class);
 });
 
+//fallback and show page not found
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});
+
 require __DIR__.'/auth.php';
 
 // Load modular route files (merge-friendly: teammates add files, no web.php edits)
